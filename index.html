@@ -1,0 +1,1593 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>マップ・ボス情報総合リスト</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            background-color: #f5f5f5;
+            margin: 20px;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        
+        /* コントロールパネルのスタイル */
+        .control-panel {
+            max-width: 1500px;
+            margin: 0 auto 20px auto;
+            background: #fff;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        /* ボタン配置 */
+        .button-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .button-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .row-label {
+            font-weight: bold;
+            font-size: 13px;
+            color: #7f8c8d;
+            width: 70px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 6px;
+        }
+        .sort-btn {
+            background-color: #34495e;
+            color: #fff;
+            border: none;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .sort-btn:hover {
+            background-color: #2c3e50;
+        }
+        .toggle-btn {
+            background-color: #16a085;
+            color: #fff;
+            border: none;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .toggle-btn:hover {
+            background-color: #117a65;
+        }
+        
+        /* 検索窓のスタイル */
+        .search-container {
+            display: flex;
+            align-items: center;
+        }
+        .search-input {
+            padding: 9px 12px;
+            font-size: 14px;
+            width: 280px;
+            border: 2px solid #bdc3c7;
+            border-radius: 4px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .search-input:focus {
+            border-color: #3498db;
+        }
+
+        /* テーブルコンテナ */
+        .table-container {
+            overflow-x: auto;
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-width: 1500px;
+            margin: 0 auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            table-layout: fixed;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px 8px;
+            text-align: left;
+            word-wrap: break-word;
+            vertical-align: top;
+        }
+        th {
+            background-color: #34495e;
+            color: #fff;
+            font-weight: bold;
+        }
+        
+        /* 各列の幅固定 */
+        .col-kana    { width: 110px; }
+        .col-map     { width: 140px; }
+        .col-boss    { width: 200px; }
+        .col-act     { width: 70px;  text-align: center; }
+        .col-area    { width: 130px; }
+        .col-original-boss { width: 160px; }
+        .col-feature { width: 240px; }
+        .col-link    { width: 200px; }
+
+        /* 非表示切り替え用共通クラス */
+        .hide-column {
+            display: none !important;
+        }
+
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        tr:hover { background-color: #f1f1f1; }
+        
+        a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 4px;
+        }
+        a:last-child {
+            margin-bottom: 0;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .center {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>マップ・ボス情報総合リスト</h1>
+
+    <div class="control-panel">
+        <div class="button-layout">
+            <div class="button-row">
+                <span class="row-label">並び替え</span>
+                <div class="btn-group">
+                    <button class="sort-btn" onclick="sortTable('kana')">５０音</button>
+                    <button class="sort-btn" onclick="sortTable('map')">アルファベット</button>
+                </div>
+            </div>
+            <div class="button-row">
+                <span class="row-label">表示切替</span>
+                <div class="btn-group">
+                    <button class="toggle-btn" id="toggle-kana-btn" onclick="toggleColumn('col-kana', this, 'よみがな')">よみがな</button>
+                    <button class="toggle-btn" id="toggle-link-btn" onclick="toggleColumn('col-link', this, 'PoE2DB')">PoE2DB</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="search-container">
+            <input type="text" id="search-box" class="search-input" placeholder="キーワードを入力して抽出..." oninput="filterTable()">
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th class="col-kana">よみがな</th>
+                    <th class="col-map">マップ<br>(日本語/英語)</th>
+                    <th class="col-boss">マップボス<br>(日本語/英語)</th>
+                    <th class="col-act">元ボス<br>アクト</th>
+                    <th class="col-area">元ボスエリア</th>
+                    <th class="col-original-boss">元ボス</th>
+                    <th class="col-feature">特徴</th>
+                    <th class="col-link">PoE2DB</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                <tr data-kana="なんぱ" data-map="Castaway">
+                    <td class="col-kana">なんぱ</td>
+                    <td>難破<br>Castaway</td>
+                    <td>沈没艦隊のトーレック<br>Torrek of the Drowned Fleet</td>
+                    <td class="center">４</td>
+                    <td>旅の終わり</td>
+                    <td>ハートリン船長</td>
+                    <td>船長？イカリ落とすボス</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Torrek_of_the_Drowned_Fleet#%E6%B2%88%E6%B2%A1%E8%89%A6%E9%9A%8A%E3%81%AE%E3%83%88%E3%83%BC%E3%83%AC%E3%83%83%E3%82%AF" target="_blank">沈没艦隊のトーレック</a></td>
+                </tr>
+                <tr data-kana="はなさくのはら" data-map="Blooming Field">
+                    <td class="col-kana">はなさくのはら</td>
+                    <td>花咲く野原<br>Blooming Field</td>
+                    <td>ブラッククロウ<br>The Black Crow</td>
+                    <td class="center">１</td>
+                    <td>狩場</td>
+                    <td>クロウベル</td>
+                    <td>鐘を持って２回逃げる</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/The_Black_Crow#%E3%83%96%E3%83%A9%E3%83%CC%E3%82%AF%E3%82%AF%E3%83%AD%E3%82%A6" target="_blank">ブラッククロウ</a></td>
+                </tr>
+                <tr data-kana="さばんな" data-map="Savannah">
+                    <td class="col-kana">さばんな</td>
+                    <td>サバンナ<br>Savannah</td>
+                    <td>ハイエナロード、カエドロン<br>Caedron, the Hyena Lord</td>
+                    <td class="center">２</td>
+                    <td>ヴァスティリ郊外</td>
+                    <td>ラスブレイカー</td>
+                    <td>ケンタウロス？</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Caedron%2C_the_Hyena_Lord#%E3%83%8F%E3%82%A4%E3%82%A8%E3%83%8A%E3%83%AD%E3%83%BC%E3%83%89%E3%80%81%E3%82%AB%E3%82%A8%E3%83%89%E3%83%AD%E3%83%B3" target="_blank">ハイエナロード、カエドロン</a></td>
+                </tr>
+                <tr data-kana="ようさい" data-map="Fortress">
+                    <td class="col-kana">ようさい</td>
+                    <td>要塞<br>Fortress</td>
+                    <td>忘れ去られた囚人、ピラシャ<br>Pirasha, the Forgotten Prisoner</td>
+                    <td class="center">２</td>
+                    <td>裏切り者の通路</td>
+                    <td>裏切り者、バルバラジンのバリャ</td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Pirasha%2C_the_Forgotten_Prisoner#%E5%BF%98%E3%82%8C%E5%8E%BB%E3%82%89%E3%82%8C%E3%81%9F%E5%9B%9A%E4%BA%BA%E3%80%81%E3%83%94%E3%83%A9%E3%82%B7%E3%83%A3" target="_blank">忘れ去られた囚人、ピラシャ</a></td>
+                </tr>
+                <tr data-kana="けいむしょ" data-map="Penitentiary">
+                    <td class="col-kana">けいむしょ</td>
+                    <td>刑務所<br>Penitentiary</td>
+                    <td>死の権化<br>Incarnation of Death</td>
+                    <td class="center">１</td>
+                    <td>オガム村</td>
+                    <td>処刑人</td>
+                    <td>処刑する人</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Incarnation_of_Death#%E6%AD%BB%E3%81%AE%E6%A8%A9%E5%8C%96" target="_blank">死の権化</a></td>
+                </tr>
+                <tr data-kana="うしなわれたとう" data-map="Lost Towers">
+                    <td class="col-kana">うしなわれたとう</td>
+                    <td>失われた塔<br>Lost Towers</td>
+                    <td>羽を持つ疫病、チェツァ<br>Chetza, the Feathered Plague</td>
+                    <td class="center">４</td>
+                    <td>モズの島</td>
+                    <td>空のスカージ</td>
+                    <td>出血ゲロ鳥</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Chetza%2C_the_Feathered_Plague#%E7%BE%BD%E3%82%92%E6%8C%81%E3%81%A4%E7%96%AB%E7%97%85%E3%80%81%E3%83%81%E3%82%A7%E3%83%84%E3%82%A1" target="_blank">羽を持つ疫病、チェツァ</a></td>
+                </tr>
+                <tr data-kana="すなのみさき" data-map="Sandspit">
+                    <td class="col-kana">すなのみさき</td>
+                    <td>砂の岬<br>Sandspit</td>
+                    <td>サンドストライダー<br>The Sandstrider</td>
+                    <td class="center">４</td>
+                    <td>ワーカパヌ島</td>
+                    <td>偉大なる白きもの</td>
+                    <td>サメ</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/The_Sandstrider#%E3%82%B5%E3%83%B3%E3%83%89%E3%82%B9%E3%83%88%E3%83%A9%E3%82%A4%E3%83%96%E3%83%BC" target="_blank">サンドストライダー</a></td>
+                </tr>
+                <tr data-kana="かじろ" data-map="Forge">
+                    <td class="col-kana">かじろ</td>
+                    <td>鍜治炉<br>Forge</td>
+                    <td>巨大な守護者、ヴァストウェルド<br>Vastweld, the Colossal Guardian</td>
+                    <td class="center">２</td>
+                    <td>タイタンの洞窟</td>
+                    <td>巨像、ザルマラス</td>
+                    <td>巨人</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Vastweld%2C_the_Colossal_Guardian#%E5%B7%A8%E5%A4%A7%E3%81%AA%E5%AE%88%E8%AD%B7%E8%80%85%E3%80%81%E3%83%B4%E3%82%A9%E3%82%B9%E3%83%88%E3%82%A6%E3%82%A7%E3%83%AB%E3%83%89" target="_blank">巨大な守護者、ヴァストウェルド</a></td>
+                </tr>
+                <tr data-kana="いおうのどうくつ" data-map="Sulphuric Caverns">
+                    <td class="col-kana">いおうのどうくつ</td>
+                    <td>硫黄の洞窟<br>Sulphuric Caverns</td>
+                    <td>骨の巨像, 大穴の領主<br>The Bone Colossus, Lord of the Pit</td>
+                    <td class="center">２</td>
+                    <td>骨の穴</td>
+                    <td>古代の戦象、エクバブ 死の王、イクタブ</td>
+                    <td>象と魔術師</td>
+                    <td class="col-link">
+                        <a href="https://poe2db.tw/jp/The_Bone_Colossus#%E9%AA%A8%E3%81%AE%E5%B7%A8%E5%83%8F" target="_blank">骨の巨像</a><br>
+                        <a href="https://poe2db.tw/jp/Lord_of_the_Pit#%E5%A4%A7%E7%A9%B4%E3%81%AE%E9%A0%98%E4%B8%BB" target="_blank">大穴の領主</a>
+                    </td>
+                </tr>
+                <tr data-kana="どろぬま" data-map="Mire">
+                    <td class="col-kana">どろぬま</td>
+                    <td>泥沼<br>Mire</td>
+                    <td>冬の笑声、リオナ<br>Riona, Winter's Cackle</td>
+                    <td class="center">１</td>
+                    <td>クリアフェル</td>
+                    <td>腐りし群れのベイラ</td>
+                    <td>街からすぐの氷ボス</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Riona%2C_Winters_Cackle#%E5%86%AC%E3%81%AE%E7%AC%AC%E5%A3%B0%E3%80%81%E3%83%AA%E3%82%AA%E3%83%8A" target="_blank">冬の笑声、リオナ</a></td>
+                </tr>
+                <tr data-kana="しんりんちたい" data-map="Woodland">
+                    <td class="col-kana">しんりんちたい</td>
+                    <td>森林地帯<br>Woodland</td>
+                    <td>肥大したマータ, 怨嗟 of コルム<br>Murtagh, the Engorged, Colm, the Rancorous</td>
+                    <td class="center">１</td>
+                    <td>川岸</td>
+                    <td>腐乱した粉屋</td>
+                    <td></td>
+                    <td class="col-link">
+                        <a href="https://poe2db.tw/jp/Murtagh%2C_the_Engorged" target="_blank">肥大したマータ</a><br>
+                        <a href="https://poe2db.tw/jp/Colm%2C_the_Rancorous" target="_blank">怨嗟のコルム</a>
+                    </td>
+                </tr>
+                <tr data-kana="おすいだめ" data-map="Sump">
+                    <td class="col-kana">おすいだめ</td>
+                    <td>汚水溜め<br>Sump</td>
+                    <td>萎れた老婆、ブラッカ<br>Brakka, the Withered Crone</td>
+                    <td class="center">３</td>
+                    <td>アザク湿原</td>
+                    <td>沼地の魔女、イグナグドゥク</td>
+                    <td>暴走スピリット婆</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Brakka%2C_the_Withered_Crone#%E8%90%A5%E3%81%9F%E8%80%81%E5%A9%86%E3%80%81%E3%83%96%E3%83%A9%E3%83%83%E3%82%AB" target="_blank">萎れた老婆、ブラッカ</a></td>
+                </tr>
+                <tr data-kana="やなぎ" data-map="Willow">
+                    <td class="col-kana">やなぎ</td>
+                    <td>柳<br>Willow</td>
+                    <td>苦悩する者、コンナル<br>Connal, the Tormented</td>
+                    <td class="center">１</td>
+                    <td>永遠なる帝国の墓地</td>
+                    <td>終わりなき悲嘆のラクラン</td>
+                    <td>墓場でタイマンボス</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Connal%2C_the_Tormented#%E8%8B%A6%E6%82%A9%E3%81%99%E3%82%8B%E8%80%85%E3%80%81%E3%82%B3%E3%83%B3%E3%83%8A%E3%83%AB" target="_blank">苦悩する者、コンナル</a></td>
+                </tr>
+                <tr data-kana="みさき" data-map="Headland">
+                    <td class="col-kana">みさき</td>
+                    <td>岬<br>Headland</td>
+                    <td>堕ちし息子、ハスク<br>Hask, the Fallen Son</td>
+                    <td class="center">２</td>
+                    <td>埋葬された神殿</td>
+                    <td>見捨てられた息子、アザリアン</td>
+                    <td>ケス奥地 四隅に火鉢</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Hask%2C_the_Fallen_Son#%E5%A0%95%E3%81%A1%E3%81%97%E6%81%AF%E5%AD%90%E3%80%81%E3%83%89%E3%83%B3%E3%82%AF" target="_blank">堕ちし息子、ハスク</a></td>
+                </tr>
+                <tr data-kana="そびえるさんみゃく" data-map="Lofty Summit">
+                    <td class="col-kana">そびえるさんみゃく</td>
+                    <td>そびえる山頂<br>Lofty Summit</td>
+                    <td>良心なきオロトン<br>Oloton, the Remorseless</td>
+                    <td class="center">３</td>
+                    <td>ジクアニのマシナリウム</td>
+                    <td>亡霊、黒き顎</td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Oloton%2C_the_Remorseless#%E8%89%AF%E5%BF%83%E3%81%AA%E3%81%8D%E3%82%AA%E3%83%AD%E3%83%88%E3%83%B3" target="_blank">良心なきオロトン</a></td>
+                </tr>
+                <tr data-kana="きょうどうぼち" data-map="Necropolis">
+                    <td class="col-kana">きょうどうぼち</td>
+                    <td>共同墓地<br>Necropolis</td>
+                    <td>黒の法務官、ティコ<br>Tycho, the Black Praetor</td>
+                    <td class="center">１</td>
+                    <td>法務官の霊廟</td>
+                    <td>永遠なる法務官、ドレイヴン</td>
+                    <td>墓場ボス男</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Tycho%2C_the_Black_Praetor#%E9%BB%92%E3%81%AE%E6%B3%95%E5%8B%99%E5%AE%98%E3%80%81%E3%83%86%E3%82%A3%E3%82%B3" target="_blank">黒の法務官、ティコ</a></td>
+                </tr>
+                <tr data-kana="ちかのうこつどう" data-map="Crypt">
+                    <td class="col-kana">ちかのうこつどう</td>
+                    <td>地下納骨堂<br>Crypt</td>
+                    <td>信仰の真似事、メルトワックス<br>Meltwax, Mockery of Faith</td>
+                    <td class="center">１</td>
+                    <td>オガムの邸宅</td>
+                    <td>生ける儀式、キャンドルマス</td>
+                    <td>屋敷の石像</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Meltwax%2C_Mockery_of_Faith#%E4%BF%A1%E4%BB%B0%E3%81%AE%E7%9C%9F%E4%BC%BC%E4%BA%8B%E3%80%81%E3%83%A1%E3%83%AB%E3%83%88%E3%83%AF%E3%83%83%E3%82%AF%E3%82%B9" target="_blank">信仰の真似事、メルトワックス</a></td>
+                </tr>
+                <tr data-kana="じょうきせん" data-map="Steaming Springs">
+                    <td class="col-kana">じょうきせん</td>
+                    <td>蒸気泉<br>Steaming Springs</td>
+                    <td>サーペントクィーン、マナッサ<br>Manassa, the Serpent Queen</td>
+                    <td class="center">２</td>
+                    <td>ケス</td>
+                    <td>大蛇の女王、カバラ</td>
+                    <td>ケスの蛇ボス</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Manassa%2C_the_Serpent_Queen#%E3%82%B5%E3%83%BC%E3%83%9A%E3%83%B3%E3%83%88%E3%82%AF%E3%82%A3%E3%83%BC%E3%83%B3%E3%80%81%E3%83%9E%E3%83%8A%E3%83%83%E3%82%B5" target="_blank">サーペントクィーン、マナッサ</a></td>
+                </tr>
+                <tr data-kana="ろうしゅつ" data-map="Seepage">
+                    <td class="col-kana">ろうしゅつ</td>
+                    <td>漏出<br>Seepage</td>
+                    <td>真菌のベヒモス<br>The Fungus Behemoth</td>
+                    <td class="center">１</td>
+                    <td>根の穴</td>
+                    <td>腐ったドルイド</td>
+                    <td>キノコ</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/The_Fungus_Behemoth#%E7%9C%9F%E8%8F%8C%E3%81%AE%E3%83%99%E3%83%92%E3%83%A2%E3%82%B9" target="_blank">真菌のベヒモス</a></td>
+                </tr>
+                <tr data-kana="かわべ" data-map="Riverside">
+                    <td class="col-kana">かわべ</td>
+                    <td>川辺<br>Riverside</td>
+                    <td>頭砕き、ゼコア<br>Zekoa, the Headcrusher</td>
+                    <td class="center">３</td>
+                    <td>ジャングルの遺跡</td>
+                    <td>マイティ・シルバーフィスト</td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Zekoa%2C_the_Headcrusher#%E9%A0%AD%E7%A0%95%E3%81%8D%E3%80%81%E3%82%BC%E3%82%B3%E3%82%A2" target="_blank">頭砕き、ゼコア</a></td>
+                </tr>
+                <tr data-kana="そうげん" data-map="Steppe">
+                    <td class="col-kana">そうげん</td>
+                    <td>草原<br>Steppe</td>
+                    <td>反逆のラストロード、ゴゼン<br>Gozen, Rebellious Rustlord</td>
+                    <td class="center">１</td>
+                    <td>赤き谷</td>
+                    <td>錆の王</td>
+                    <td>赤き森のボス</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Vorrik%2C_The_Infernal_Engineer#%E5%9C%B0%E7%8D%84%E3%81%AE%E6%8A%80%E5%B8%AB%E3%80%81%E3%83%B4%E3%82%A9%E3%83%AA%E3%83%83%E3%82%AF" target="_blank">地獄の技師、ヴォリック</a></td>
+                </tr>
+                <tr data-kana="みなも" data-map="Slick">
+                    <td class="col-kana">みなも</td>
+                    <td>水面<br>Slick</td>
+                    <td>地獄の技師、ヴォリック<br>Vorrik, The Infernal Engineer</td>
+                    <td class="center">２</td>
+                    <td>マウドゥン鉱山</td>
+                    <td>恐怖の技師、ルジャ</td>
+                    <td>グレネードボス</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Vorrik%2C_The_Infernal_Engineer#%E5%9C%B0%E7%8D%84%E3%81%AE%E6%8A%80%E5%B8%AB%E3%80%81%E3%83%B4%E3%82%A9%E3%83%AA%E3%83%83%E3%82%AF" target="_blank">地獄の技師、ヴォリック</a></td>
+                </tr>
+                <tr data-kana="くものもり" data-map="Spider Woods">
+                    <td class="col-kana">くものもり</td>
+                    <td>蜘蛛の森<br>Spider Woods</td>
+                    <td>憎むべき森、ルートグラスプ<br>Rootgrasp, the Hateful Forest</td>
+                    <td class="center">１</td>
+                    <td>グレルウッド</td>
+                    <td>ブランブルガスト</td>
+                    <td>カオス植物</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Rootgrasp%2C_the_Hateful_Forest#%E6%86%8E%E3%82%80%E3%81%B9%E3%81%8D%E6%A3%AE%E3%80%81%E3%83%AB%E3%83%BC%E3%83%88%E3%82%B0%E3%83%A9%E3%82%B9%E3%83%97" target="_blank">憎むべき森、ルートグラスプ</a></td>
+                </tr>
+                <tr data-kana="こつずい" data-map="Marrow">
+                    <td class="col-kana">こつずい</td>
+                    <td>骨髄<br>Marrow</td>
+                    <td>骨の暴君、ザー・ワリ<br>Zar Wali, the Bone Tyrant</td>
+                    <td class="center">２</td>
+                    <td>デシャールの尖塔</td>
+                    <td>冒涜者、トール・ガル</td>
+                    <td>巨大ドクロ</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Zar_Wali%2C_the_Bone_Tyrant#%E9%AA%A8%E3%81%AE%E6%9A%B4%E5%90%9B%E3%80%81%E3%82%B6%E3%83%BC%E3%83%BB%E3%83%AF%E3%83%AA" target="_blank">骨の暴君、ザー・ワリ</a></td>
+                </tr>
+                <tr data-kana="ヴぁーるのとし" data-map="Vaal City">
+                    <td class="col-kana">ヴぁーるのとし</td>
+                    <td>ヴァールの都市<br>Vaal City</td>
+                    <td>バイパー・ナプアツィ<br>Viper Napuatzi</td>
+                    <td class="center">３</td>
+                    <td>ウトザール</td>
+                    <td>バイパー・ナプアツィ</td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Viper_Napuatzi#%E3%83%B4%E3%82%A1%E3%82%A4%E3%83%91%E3%83%BC%E3%83%BB%E3%83%8A%E3%83%97%E3%82%A2%E3%83%84%E3%82%A3" target="_blank">ヴァイパー・ナプアツィ</a></td>
+                </tr>
+                <tr data-kana="ぶらっどうっど" data-map="Bloodwood">
+                    <td class="col-kana">ぶらっどうっど</td>
+                    <td>ブラッドウッド<br>Bloodwood</td>
+                    <td>動く大地、ゴリアン<br>Gorian, the Moving Earth</td>
+                    <td class="center">１</td>
+                    <td>泥の巣穴</td>
+                    <td>デヴァウラー</td>
+                    <td>泥の巣穴のボス</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Gorian%2C_the_Moving_Earth#%E5%8B%95%E3%81%8F%E5%A4%A7%E5%9C%B0%E3%80%81%E3%82%B4%E3%83%AA%E3%82%A2%E3%83%B3" target="_blank">動く大地、ゴリアン</a></td>
+                </tr>
+                <tr data-kana="せのーて" data-map="Cenotes">
+                    <td class="col-kana">せのーて</td>
+                    <td>セノーテ<br>Cenotes</td>
+                    <td>空を見る者、バーラク<br>Bahlak, the Sky Seer</td>
+                    <td class="center">３</td>
+                    <td>カオス寺院</td>
+                    <td>空を見る者、バーラク</td>
+                    <td>竜巻鳥</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Bahlak%2C_the_Sky_Seer#%E7%A9%BA%E3%82%92%E8%A6%8B%E3%82%8B%E8%80%85%E3%80%81%E3%83%90%E3%83%BC%E3%83%A9%E3%82%AF" target="_blank">空を見る者、バーラク</a></td>
+                </tr>
+                <tr data-kana="かくれいわや" data-map="Hidden Grotto">
+                    <td class="col-kana">かくれいわや</td>
+                    <td>隠れ岩屋<br>Hidden Grotto</td>
+                    <td>骨の暴君、ザー・ワリ<br>Zar Wali, the Bone Tyrant</td>
+                    <td class="center">２</td>
+                    <td>デシャールの尖塔</td>
+                    <td>冒涜者、トール・ガル</td>
+                    <td>巨大ドクロ</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Zar_Wali%2C_the_Bone_Tyrant#%E9%AA%A8%E3%81%AE%E6%9A%B4%E5%90%9B%E3%80%81%E3%82%B6%E3%83%BC%E3%83%BB%E3%83%AF%E3%83%AA" target="_blank">骨の暴君、ザー・ワリ</a></td>
+                </tr>
+                <tr data-kana="けいこく" data-map="Ravine">
+                    <td class="col-kana">けいこく</td>
+                    <td>渓谷<br>Ravine</td>
+                    <td>灼熱の守護者、テツカトル<br>Tetzcatl, the Blazing Guardian</td>
+                    <td class="center">３</td>
+                    <td>ジクアニの聖所</td>
+                    <td>コアの番人、ジコアトル</td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Tetzcatl%2C_the_Blazing_Guardian#%E7%81%BC%E7%86%B1%E3%81%AE%E5%AE%88%E8%AD%B7%E8%80%85%E3%80%81%E3%83%86%E3%83%84%E3%82%AB%E3%83%88%E3%83%AB" target="_blank">灼熱の守護者、テツカトル</a></td>
+                </tr>
+                <tr data-kana="こうざんのおね" data-map="Alpine Ridge">
+                    <td class="col-kana">こうざんのおね</td>
+                    <td>高山の尾根<br>Alpine Ridge</td>
+                    <td>炎の誓い、イグナティア, 霜舌のゲリダ<br>Ignatia, the Flame-Sworn, Gelida, the Frost-Tongue</td>
+                    <td class="center">幕間</td>
+                    <td>焼け焦げた農場</td>
+                    <td>黒き火葬のヘルドラ · 白き死衣のイゾルデ</td>
+                    <td>氷と炎</td>
+                    <td class="col-link">
+                        <a href="https://poe2db.tw/jp/Ignatia%2C_the_Flame-Sworn#%E7%81%A5%E3%81%AE%E8%AA%93%E3%81%A1%E3%80%81%E3%82%A4%E3%82%B0%E3%83%8A%E3%83%86%E3%82%A3%E3%82%A2" target="_blank">炎の誓い、イグナティア</a><br>
+                        <a href="https://poe2db.tw/jp/Gelida%2C_the_Frost-Tongue#%E9%9C%AC%E8%88%AC%E3%81%AE%E3%82%B2%E3%83%AA%E3%83%8D" target="_blank">霜舌のゲリダ</a>
+                    </td>
+                </tr>
+                <tr data-kana="よちょう" data-map="Augury">
+                    <td class="col-kana">よちょう</td>
+                    <td>予兆<br>Augury</td>
+                    <td>頂点、グレッサー・クル<br>Gressor-Kul, the Apex</td>
+                    <td class="center">３</td>
+                    <td>キメラの湿地</td>
+                    <td>キメラ、ザイクルシアン</td>
+                    <td>キメラ</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Gressor-Kul%2C_the_Apex#%E9%A0%82%E7%82%B9%E3%80%81%E3%82%B6%E3%83%BC%E3%83%BB%E3%82%AF%E3%83%AB" target="_blank">頂点、グレッサー・クル</a></td>
+                </tr>
+                <tr data-kana="かんごく" data-map="Bastille">
+                    <td class="col-kana">かんごく</td>
+                    <td>監獄<br>Bastille</td>
+                    <td>フロストベイン、ヴェイナー<br>Veynar, the Frostbane</td>
+                    <td class="center">幕間</td>
+                    <td>狼の砦</td>
+                    <td>恐怖の看守、オスウィン</td>
+                    <td>氷版アザリアン、地面から針</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Veynar%2C_the_Frostbane#%E3%83%95%E3%83%AD%E3%82%B9%E3%83%88%E3%83%99%E3%82%A4%E3%83%B3%E3%80%81%E3%83%B4%E3%82%A7%E3%82%A4%E3%83%8A%E3%83%BC" target="_blank">フロストベイン、ヴェイナー</a></td>
+                </tr>
+                <tr data-kana="おがわ" data-map="Creek">
+                    <td class="col-kana">おがわ</td>
+                    <td>小川<br>Creek</td>
+                    <td>憎む者、ティアニー<br>Tierney, the Hateful</td>
+                    <td class="center">１</td>
+                    <td>川岸</td>
+                    <td>腐乱した粉屋</td>
+                    <td>粉屋</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Tierney%2C_the_Hateful#%E6%86%8E%E3%82%80%E8%80%85%E3%80%81%E3%83%86%E3%82%A3%E3%82%A2%E3%83%8B%E3%83%BC" target="_blank">憎む者、ティアニー</a></td>
+                </tr>
+                <tr data-kana="しんくのきし" data-map="Crimson Shores">
+                    <td class="col-kana">しんくのきし</td>
+                    <td>深紅の岸<br>Crimson Shores</td>
+                    <td>残り火より生まれし者、ヴォルカー<br>Volkhar, the Emberborn</td>
+                    <td class="center">２</td>
+                    <td>セケマの試練</td>
+                    <td>大地を砕く者、ラトルケージ</td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Volkhar%2C_the_Emberborn#%E6%AE%8B%E3%82%8A%E7%81%AB%E3%82%88%E3%82%8A%E7%94%9F%E3%81%BE%E3%82%8C%E3%81%97%E8%80%85%E3%80%81%E3%83%B4%E3%82%A9%E3%83%AB%E3%82%AB%E3%83%BC" target="_blank">残り火より生まれし者、ヴォルカー</a></td>
+                </tr>
+                <tr data-kana="ふはい" data-map="Decay">
+                    <td class="col-kana">ふはい</td>
+                    <td>腐敗<br>Decay</td>
+                    <td>真菌のベヒモス<br>The Fungus Behemoth</td>
+                    <td class="center">１</td>
+                    <td>根の穴</td>
+                    <td>腐ったドルイド</td>
+                    <td>キノコ</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/The_Fungus_Behemoth#%E7%9C%9F%E8%8F%8C%E3%81%AE%E3%83%99%E3%83%92%E3%83%A2%E3%82%B9" target="_blank">真菌のベヒモス</a></td>
+                </tr>
+                <tr data-kana="こうりょうち" data-map="Deserted">
+                    <td class="col-kana">こうりょうち</td>
+                    <td>荒涼地<br>Deserted</td>
+                    <td>大穴の領主<br>Lord of the Pit</td>
+                    <td class="center">２</td>
+                    <td>骨の穴</td>
+                    <td>死の王、イクタブ</td>
+                    <td>象が居ない魔術師</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Lord_of_the_Pit#%E5%A4%A7%E7%A9%B4%E3%81%AE%E9%A0%98%E4%B8%BB" target="_blank">大穴の領主</a></td>
+                </tr>
+                <tr data-kana="ぐりむへぶん" data-map="Grimhaven">
+                    <td class="col-kana">ぐりむへぶん</td>
+                    <td>グリムヘブン<br>Grimhaven</td>
+                    <td>恐ろしき妻、サフィラ<br>Saphira, The Dread Consort</td>
+                    <td class="center">１</td>
+                    <td>妃の墓所</td>
+                    <td>法務官の妻、アシニア</td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Saphira%2C_The_Dread_Consort#%E6%81%90%E3%82%8D%E3%81%97%E3%81%8D%E5%A6%BB%E3%80%81%E3%82%B5%E3%83%95%E3%82%A3%E3%83%A9" target="_blank">恐ろしき妻、サフィラ</a></td>
+                </tr>
+                <tr data-kana="すあな" data-map="Hive">
+                    <td class="col-kana">すあな</td>
+                    <td>巣穴<br>Hive</td>
+                    <td>真菌のベヒモス<br>The Fungus Behemoth</td>
+                    <td class="center">１</td>
+                    <td>根の穴</td>
+                    <td>腐ったドルイド</td>
+                    <td>キノコ</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/The_Fungus_Behemoth#%E7%9C%9F%E8%8F%8C%E3%81%AE%E3%83%99%E3%83%92%E3%83%A2%E3%82%B9" target="_blank">真菌のベヒモス</a></td>
+                </tr>
+                <tr data-kana="ごうか" data-map="Inferno">
+                    <td class="col-kana">ごうか</td>
+                    <td>業火<br>Inferno</td>
+                    <td>[DNT-UNUSED] Dog Trader</td>
+                    <td class="center"></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="col-link"></td>
+                </tr>
+                <tr data-kana="こうどう" data-map="Mineshaft">
+                    <td class="col-kana">こうどう</td>
+                    <td>坑道<br>Mineshaft</td>
+                    <td>地獄の技師、ヴォリック<br>Vorrik, The Infernal Engineer</td>
+                    <td class="center">２</td>
+                    <td>マウドゥン鉱山</td>
+                    <td>恐怖の技師、ルジャ</td>
+                    <td>グレネードボス</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Vorrik%2C_The_Infernal_Engineer#%E5%9C%B0%E7%8D%84%E3%81%AE%E6%8A%80%E5%B8%AB%E3%80%81%E3%83%B4%E3%82%A9%E3%83%AA%E3%83%83%E3%82%AF" target="_blank">地獄の技師、ヴォリック</a></td>
+                </tr>
+                <tr data-kana="おあしす" data-map="Oasis">
+                    <td class="col-kana">おあしす</td>
+                    <td>オアシス<br>Oasis</td>
+                    <td>永期なるイシュタロス<br>Ishtaroth, the Perennial</td>
+                    <td class="center">２</td>
+                    <td>ハラニの門</td>
+                    <td>復活した王、ジャマンラ</td>
+                    <td>ハラニの門でのジャマンラ</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Ishtaroth%2C_the_Perennial#%E6%B0%B8%E6%9C%9F%E3%81%AA%E3%82%8B%E3%82%A4%E3%82%B7%E3%83%A5%E3%82%BF%E3%83%AD%E3%82%B9" target="_blank">永期なるイシュタロス</a></td>
+                </tr>
+                <tr data-kana="しおだまり" data-map="Rockpools">
+                    <td class="col-kana">しおだまり</td>
+                    <td>潮だまり<br>Rockpools</td>
+                    <td>飽くなき者、ブルゴール<br>Brughor, the Insatiable</td>
+                    <td class="center">４</td>
+                    <td>火山地帯</td>
+                    <td>キンの領主、クルトォグ</td>
+                    <td>火山での巨人</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Brughor%2C_the_Insatiable#%E9%A3%BD%E3%81%8F%E3%81%AA%E3%81%8D%E8%80%85%E3%80%81%E3%83%96%E3%83%AB%E3%82%B4%E3%83%BC%E3%83%AB" target="_blank">飽くなき者、ブルゴール</a></td>
+                </tr>
+                <tr data-kana="しずむせんとう" data-map="Sinking Spire">
+                    <td class="col-kana">しずむせんとう</td>
+                    <td>沈む尖塔<br>Sinking Spire</td>
+                    <td>守護者、ストームゴア<br>Stormgore, the Guardian</td>
+                    <td class="center">幕間</td>
+                    <td>侵蝕の峡谷</td>
+                    <td>守護者、ストームゴア</td>
+                    <td>雷の黒き顎</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Stormgore%2C_the_Guardian#%E5%AE%88%E8%AD%B7%E8%80%85%E3%80%81%E3%82%B9%E3%83%B8%E3%83%BC%E3%83%A0%E3%82%B4%E3%82%A2" target="_blank">守護者、ストームゴア</a></td>
+                </tr>
+                <tr data-kana="てつのじょうさい" data-map="The Iron Citadel">
+                    <td class="col-kana">てつのじょうさい</td>
+                    <td>鉄の城塞<br>The Iron Citadel</td>
+                    <td>ジオノール伯爵, 堕落した狼、ジオノール<br>Count Geonor, Geonor, the Putrid Wolf</td>
+                    <td class="center">１</td>
+                    <td>オガムの邸宅</td>
+                    <td>ジオノール伯爵, 堕落した狼、ジオノール</td>
+                    <td></td>
+                    <td class="col-link">
+                        <a href="https://poe2db.tw/jp/Count_Geonor#%E3%82%B8%E3%82%AA%E3%83%8E%E3%83%BC%E3%83%AB%E4%BC%AF%E7%88%B5" target="_blank">ジオノール伯爵</a><br>
+                        <a href="https://poe2db.tw/jp/Geonor%2C_the_Putrid_Wolf#%E5%A0%95%E8%90%BD%E3%81%97%E3%81%9F%E7%8B%BC%E3%80%81%E3%82%B8%E3%82%AA%E3%83%8E%E3%83%BC%E3%83%AB" target="_blank">堕落した狼、ジオノール</a>
+                    </td>
+                </tr>
+                <tr data-kana="いしのじょうさい" data-map="The Stone Citadel">
+                    <td class="col-kana">いしのじょうさい</td>
+                    <td>石の城塞<br>The Stone Citadel</td>
+                    <td>ドリヤニ, ドリヤニの偉業<br>Doryani, Royal Thaumaturge, Doryani's Triumph</td>
+                    <td class="center">３</td>
+                    <td>黒の間</td>
+                    <td>宮廷魔術師、ドリヤニ, ドリヤニの偉業</td>
+                    <td></td>
+                    <td class="col-link">
+                        <a href="https://poe2db.tw/jp/Doryani%2C_Royal_Thaumaturge#%E5%AE%AE%E5%BB%B7%E9%AD%94%E8%A1%93%E5%B8%AB%E3%80%81%E3%83%89%E3%83%AA%E3%83%A4%E3%83%8B" target="_blank">宮廷魔術師、ドリヤニ</a><br>
+                        <a href="https://poe2db.tw/jp/Doryanis_Triumph#%E3%83%89%E3%83%AA%E3%83%A4%E3%83%8B%E3%81%AE%E5%81%89%E6%A5%AD" target="_blank">ドリヤニの偉業</a>
+                    </td>
+                </tr>
+                <tr data-kana="どうのじょうさい" data-map="The Copper Citadel">
+                    <td class="col-kana">どうのじょうさい</td>
+                    <td>銅の城塞<br>The Copper Citadel</td>
+                    <td>アボミネーション、ジャマンラ<br>Jamanra, the Abomination</td>
+                    <td class="center">２</td>
+                    <td>ドレッドノートの前衛</td>
+                    <td>アボミネーション、ジャマンラ</td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Jamanra%2C_the_Abomination#%E3%82%A2%E3%83%9C%E3%83%9F%E3%83%8D%E3%83%BC%E3%82%B7%E3%83%A7%E3%83%B3%E3%80%81%E3%82%B8%E3%83%A3%E3%83%9E%E3%83%B3%E3%83%A9" target="_blank">アボミネーション、ジャマンラ</a></td>
+                </tr>
+                <tr data-kana="ヴぁーるのむら" data-map="Vaal Village">
+                    <td class="col-kana">ヴぁーるのむら</td>
+                    <td>ヴァールの村<br>Vaal Village</td>
+                    <td>[DNT-UNUSED] Dog Trader</td>
+                    <td class="center"></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="col-link"></td>
+                </tr>
+                <tr data-kana="さびのくぼち" data-map="Rustbowl">
+                    <td class="col-kana">さびのくぼち</td>
+                    <td>錆の窪地<br>Rustbowl</td>
+                    <td>反逆のラストロード、ゴゼン<br>Gozen, Rebellious Rustlord</td>
+                    <td class="center">１</td>
+                    <td>赤き谷</td>
+                    <td>錆の王</td>
+                    <td>赤き森のボス</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Gozen%2C_Rebellious_Rustlord#%E5%8F%8D%E9%80%86%E3%81%AE%E3%83%A9%E3%82%B9%E3%83%88%E3%83%AD%E3%83%BC%E3%83%89%E3%80%81%E3%82%B4%E3%82%BC%E3%83%B3" target="_blank">反逆のラストロード、ゴゼン</a></td>
+                </tr>
+                <tr data-kana="ひきなみ" data-map="Backwash">
+                    <td class="col-kana">ひきなみ</td>
+                    <td>引き波<br>Backwash</td>
+                    <td>不快な者、ヤオタ<br>Yaota, the Loathsome</td>
+                    <td class="center">３</td>
+                    <td>汚物の頂</td>
+                    <td>汚物の女王</td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Yaota%2C_the_Loathsome#%E4%B8%8D%E5%BF%AB%E3%81%AA%E8%80%85%E3%80%81%E3%83%A4%E3%82%AA%E3%82%BF" target="_blank">不快な者、ヤオタ</a></td>
+                </tr>
+                <tr data-kana="まいそうのぬま" data-map="Burial Bog">
+                    <td class="col-kana">まいそうのぬま</td>
+                    <td>埋葬の沼<br>Burial Bog</td>
+                    <td>邪悪な棘、グラッジラッシュ<br>Grudgelash, Vile Thorn</td>
+                    <td class="center">３</td>
+                    <td>砂原の沼地</td>
+                    <td>ルートドレッジ</td>
+                    <td>ゾンビ召喚の木</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Grudgelash%2C_Vile_Thorn#%E9%82%AA%E6%82%AA%E3%81%AA%E6%A3%98%E3%80%81%E3%82%B0%E3%83%A9%E3%83%83%E3%82%B8%E3%83%A9%E3%83%83%E3%82%B7%E3%83%A5" target="_blank">邪悪な棘、グラッジラッシュ</a></td>
+                </tr>
+                <tr data-kana="しっちたい" data-map="Wetlands">
+                    <td class="col-kana">しっちたい</td>
+                    <td>湿地帯<br>Wetlands</td>
+                    <td>ハイエナロード、カエドロン<br>Caedron, the Hyena Lord</td>
+                    <td class="center">２</td>
+                    <td>ヴァスティリ郊外</td>
+                    <td>ラスブレイカー</td>
+                    <td>ケンタウロス？</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Caedron%2C_the_Hyena_Lord#%E3%83%8F%E3%82%A4%E3%82%A8%E3%83%8A%E3%83%AD%E3%83%BC%E3%83%89%E3%80%81%E3%82%AB%E3%82%A8%E3%83%89%E3%83%AD%E3%83%B3" target="_blank">ハイエナロード、カエドロン</a></td>
+                </tr>
+                <tr data-kana="たいようのしんでん" data-map="Sun Temple">
+                    <td class="col-kana">たいようのしんでん</td>
+                    <td>太陽の神殿<br>Sun Temple</td>
+                    <td>太陽の預言者、トンキ<br>Tonqui, Seer of the Sun</td>
+                    <td class="center">３</td>
+                    <td>コペク神殿</td>
+                    <td>太陽の大祭司、ケツーリ</td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Tonqui%2C_Seer_of_the_Sun#%E5%A4%AA%E9%9A%BD%E3%81%AE%E9%A0%98%E8%A8%80%E8%80%85%E3%80%81%E3%83%88%E3%83%B3%E3%82%AD" target="_blank">太陽の預言者、トンキ</a></td>
+                </tr>
+                <tr data-kana="すいろ" data-map="Channel">
+                    <td class="col-kana">すいろ</td>
+                    <td>水路<br>Channel</td>
+                    <td>堕ちし息子、ハスク<br>Hask, the Fallen Son</td>
+                    <td class="center">２</td>
+                    <td>埋葬された神殿</td>
+                    <td>見捨てられた息子、アザリアン</td>
+                    <td>ケス奥地 四隅に火鉢</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Hask%2C_the_Fallen_Son#%E5%A0%95%E3%81%A1%E3%81%97%E6%81%AF%E5%AD%90%E3%80%81%E3%83%89%E3%83%B3%E3%82%AF" target="_blank">堕ちし息子、ハスク</a></td>
+                </tr>
+                <tr data-kana="かじば" data-map="Molten Vault">
+                    <td class="col-kana">かじば</td>
+                    <td>鍛冶場<br>Molten Vault</td>
+                    <td>生ける炉、ガルザル<br>Gulzal, the Living Furnace</td>
+                    <td class="center">３</td>
+                    <td>溶融した宝物庫</td>
+                    <td>鍛造場主、メクトゥル</td>
+                    <td>溶岩巨人</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Gulzal%2C_the_Living_Furnace__#%E7%94%9F%E3%81%91%E3%82%8B%E7%82%89%E3%80%81%E3%82%AC%E3%83%AB%E3%82%B6%E3%83%AB" target="_blank">生ける炉、ガルザル</a></td>
+                </tr>
+                <tr data-kana="こうじょう" data-map="The Assembly">
+                    <td class="col-kana">こうじょう</td>
+                    <td>工場<br>The Assembly</td>
+                    <td>灼熱の守護者、テツカトル<br>Tetzcatl, the Blazing Guardian</td>
+                    <td class="center">３</td>
+                    <td>ジクアニの聖所</td>
+                    <td>コアの番人、ジコアトル</td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Tetzcatl%2C_the_Blazing_Guardian#%E7%81%BC%E7%86%B1%E3%81%AE%E5%AE%88%E8%AD%B7%E8%80%85%E3%80%81%E3%83%86%E3%83%84%E3%82%AB%E3%83%88%E3%83%AB" target="_blank">灼熱の守護者、テツカトル</a></td>
+                </tr>
+                <tr data-kana="だいち" data-map="Mesa">
+                    <td class="col-kana">だいち</td>
+                    <td>台地<br>Mesa</td>
+                    <td>砂丘の住人、カラッシュ<br>Karash, The Dune Dweller</td>
+                    <td class="center">２</td>
+                    <td>セケマの試練</td>
+                    <td>砂漠の母、アシャー</td>
+                    <td>サソリ</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Karash%2C_The_Dune_Dweller#%E7%A0%82%E4%B8%98%E3%81%AE%E4%BD%8F%E4%BA%BA%E3%80%81%E3%82%AB%E3%83%A9%E3%83%83%E3%82%B7%E3%83%A5" target="_blank">砂丘の住人、カラッシュ</a></td>
+                </tr>
+                <tr data-kana="ぜっぺき" data-map="Bluff">
+                    <td class="col-kana">ぜっぺき</td>
+                    <td>絶壁<br>Bluff</td>
+                    <td>頂点、グレッサー・クル<br>Gressor-Kul, the Apex</td>
+                    <td class="center">３</td>
+                    <td>キメラの湿地</td>
+                    <td>キメラ、ザイクルシアン</td>
+                    <td>キメラ</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Gressor-Kul%2C_the_Apex#%E9%A0%82%E7%82%B9%E3%80%81%E3%82%B0%E3%83%AC%E3%83%83%E3%82%B5%E3%83%BC%E3%83%BB%E3%82%AF%E3%83%AB" target="_blank">頂点、グレッサー・クル</a></td>
+                </tr>
+                <tr data-kana="あずめりさんみゃく" data-map="Azmerian Ranges">
+                    <td class="col-kana">あずめりさんみゃく</td>
+                    <td>アズメリ山脈<br>Azmerian Ranges</td>
+                    <td>同胞殺しのモーウィン<br>Morwyn, the Kinslayer</td>
+                    <td class="center">幕間</td>
+                    <td>クリアール村</td>
+                    <td>流浪の槍、リサラ</td>
+                    <td>ヴァイパー幕間バージョン</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Morwyn%2C_the_Kinslayer#%E5%90%8C%E8%83%9E%E6%AE%BA%E3%81%97%E3%81%AE%E3%83%A2%E3%83%BC%E3%82%A6%E3%82%A3%E3%83%B3" target="_blank">同胞殺しのモーウィン</a></td>
+                </tr>
+                <tr data-kana="こおったたき" data-map="Frozen Falls">
+                    <td class="col-kana">こおったたき</td>
+                    <td>凍った滝<br>Frozen Falls</td>
+                    <td>冬の翼、スレイブン<br>Thraeven, Wing of Winter</td>
+                    <td class="center">幕間</td>
+                    <td>氷河の湖</td>
+                    <td>凍てつく鉤爪、ラッカー</td>
+                    <td>幕間の氷エリアの鳥</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Thraeven%2C_Wing_of_Winter#%E5%86%AC%E3%81%AE%E7%BF%BC%E3%80%81%E3%82%B9%E3%83%AC%E3%82%A4%E3%83%96%E3%83%B3" target="_blank">冬の翼、スレイブン</a></td>
+                </tr>
+                <tr data-kana="ざんごう" data-map="Trenches">
+                    <td class="col-kana">ざんごう</td>
+                    <td>塹壕<br>Trenches</td>
+                    <td>動く大地、ゴリアン<br>Gorian, the Moving Earth</td>
+                    <td class="center">１</td>
+                    <td>泥の巣穴</td>
+                    <td>デヴァウラー</td>
+                    <td>泥の巣穴のボス</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Gorian%2C_the_Moving_Earth#%E5%8B%95%E3%81%8F%E5%A4%A7%E5%9C%B0%E3%80%81%E3%82%B4%E3%83%AA%E3%82%A2%E3%83%B3" target="_blank">動く大地、ゴリアン</a></td>
+                </tr>
+                <tr data-kana="ひすいのしま" data-map="The Jade Isles">
+                    <td class="col-kana">ひすいのしま</td>
+                    <td>ヒスイの島<br>The Jade Isles</td>
+                    <td>選ばれし者、マノキ, 熱病に侵されし者、マノキ, 冒涜されし者、マノキ<br>Manoki, the Chosen, Manoki, the Fevered, Manoki, the Defiled</td>
+                    <td class="center">４</td>
+                    <td>部族の中心</td>
+                    <td>族長、タヴァカイ</td>
+                    <td>４章最後ボス</td>
+                    <td class="col-link">
+                        <a href="https://poe2db.tw/jp/Manoki%2C_the_Chosen" target="_blank">選ばれし者、マノキ</a><br>
+                        <a href="https://poe2db.tw/jp/Manoki%2C_the_Fevered" target="_blank">熱病に侵されし者、マノキ</a><br>
+                        <a href="https://poe2db.tw/jp/Manoki%2C_the_Defiled" target="_blank">冒涜されし者、マノキ</a>
+                    </td>
+                </tr>
+                <tr data-kana="しんせいなちょすいち" data-map="Sacred Reservoir">
+                    <td class="col-kana">しんせいなちょすいち</td>
+                    <td>神聖な貯水池<br>Sacred Reservoir</td>
+                    <td>剣の王、ザーミル<br>Zahmir, the Blade Sovereign</td>
+                    <td class="center">幕間</td>
+                    <td>キーマの貯水池</td>
+                    <td>ファリドゥンの王子、アズマディ王子</td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Zahmir%2C_the_Blade_Sovereign#%E5%89%A3%E3%81%AE%E7%8E%8B%E3%80%81%E3%82%B6%E3%83%BC%E3%83%9F%E3%83%AB" target="_blank">剣の王、ザーミル</a></td>
+                </tr>
+                <tr data-kana="はいやしき" data-map="Derelict Mansion">
+                    <td class="col-kana">はいやしき</td>
+                    <td>廃屋敷<br>Derelict Mansion</td>
+                    <td>灰の王、ヴァ―ロック, 枯れ薔薇のアヴェリン<br>Varloch, the Ashen Lord, Avelyne, the Withered Rose</td>
+                    <td class="center">幕間</td>
+                    <td>ホルテンの豪邸</td>
+                    <td>ウルフリック族長 · エルズウィス婦人</td>
+                    <td></td>
+                    <td class="col-link">
+                        <a href="https://poe2db.tw/jp/Varloch%2C_the_Ashen_Lord#%E7%81%B0%E3%81%AE%E7%8E%8B%E3%80%81%E3%83%B4%E3%82%A1%E2%80%95%E3%83%AD%E3%83%83%E3%82%AF" target="_blank">灰の王、ヴァ―ロック</a><br>
+                        <a href="https://poe2db.tw/jp/Avelyne%2C_the_Withered_Rose#%E6%9E%AF%E3%82%8C%E8%96%94%E8%96%87%E3%81%AE%E3%82%A2%E3%83%B4%E3%82%A7%E3%83%AA%E3%83%B3" target="_blank">枯れ薔薇のアヴェリン</a>
+                    </td>
+                </tr>
+                <tr data-kana="ふういんされたちか" data-map="Sealed Vault">
+                    <td class="col-kana">ふういんされたちか</td>
+                    <td>封印された地下室<br>Sealed Vault</td>
+                    <td>血の神託者、イツァラ, 肉体改造者、マズトリ<br>Ytzara, Blood Oracle, Maztli, Flesh-Shaper</td>
+                    <td class="center">#N/A</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="col-link">
+                        <a href="https://poe2db.tw/jp/Ytzara%2C_Blood_Oracle#%E8%A1%80%E3%81%AE%E7%A5%9E%E8%A8%97%E8%80%85%E3%80%81%E3%82%A4%E3%83%84%E3%82%A1%E3%83%A9" target="_blank">血の神託者、イツァラ</a><br>
+                        <a href="https://poe2db.tw/jp/Maztli%2C_Flesh-Shaper#%E8%82%89%E4%BD%93%E6%94%B9%E1%80%A0%E8%80%85%E3%80%81%E3%83%9E%E3%82%BA%E3%83%88%E3%83%AA" target="_blank">肉体改造者、マズトリ</a>
+                    </td>
+                </tr>
+                <tr data-kana="ごうりゅうてん" data-map="Confluence">
+                    <td class="col-kana">ごうりゅうてん</td>
+                    <td>合流点<br>Confluence</td>
+                    <td>サーペントクィーン、マナッサ<br>Manassa, the Serpent Queen</td>
+                    <td class="center">２</td>
+                    <td>ケス</td>
+                    <td>大蛇の女王、カバラ</td>
+                    <td>ケスの蛇ボス</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Manassa%2C_the_Serpent_Queen#%E3%82%B5%E3%83%BC%E3%83%9A%E3%83%B3%E3%83%88%E3%82%AF%E3%82%A3%E3%83%BC%E3%83%B3%E3%80%81%E3%83%9E%E3%83%8A%E3%83%83%E3%82%B5" target="_blank">サーペントクィーン、マナッサ</a></td>
+                </tr>
+                <tr data-kana="うっそうち" data-map="Overgrown">
+                    <td class="col-kana">うっそうち</td>
+                    <td>鬱蒼地<br>Overgrown</td>
+                    <td>灼熱の守護者、テツカトル<br>Tetzcatl, the Blazing Guardian</td>
+                    <td class="center">３</td>
+                    <td>ジクアニの聖所</td>
+                    <td>コアの番人、ジコアトル</td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Tetzcatl%2C_the_Blazing_Guardian#%E7%81%BC%E7%86%B1%E3%81%AE%E5%AE%88%E8%AD%B7%E8%80%85%E3%80%81%E3%83%86%E3%83%84%E3%82%AB%E3%83%88%E3%83%AB" target="_blank">灼熱の守護者、テツカトル</a></td>
+                </tr>
+                <tr data-kana="きょてん" data-map="Stronghold">
+                    <td class="col-kana">きょてん</td>
+                    <td>拠点<br>Stronghold</td>
+                    <td>鎖に繋がれた恐怖<br>The Shackled Horror</td>
+                    <td class="center">４</td>
+                    <td>監禁独房</td>
+                    <td>プリズナー</td>
+                    <td>バリスタ３回</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/The_Shackled_Horror" target="_blank">鎖に繋がれた恐怖</a></td>
+                </tr>
+                <tr data-kana="だんれつ" data-map="Rupture">
+                    <td class="col-kana">だんれつ</td>
+                    <td>断裂<br>Rupture</td>
+                    <td>頭砕き、ゼコア<br>Zekoa, the Headcrusher</td>
+                    <td class="center">３</td>
+                    <td>ジャングルの遺跡</td>
+                    <td>マイティ・シルバーフィスト</td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Zekoa%2C_the_Headcrusher#%E9%A0%AD%E7%A0%95%E3%81%8D%E3%80%81%E3%82%BC%E3%82%B3%E3%82%A2" target="_blank">頭砕き、ゼコア</a></td>
+                </tr>
+                <tr data-kana="いずみ" data-map="Spring">
+                    <td class="col-kana">いずみ</td>
+                    <td>泉<br>Spring</td>
+                    <td>サーペントクィーン、マナッサ<br>Manassa, the Serpent Queen</td>
+                    <td class="center">２</td>
+                    <td>ケス</td>
+                    <td>大蛇の女王、カバラ</td>
+                    <td>ケスの蛇ボス</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Manassa%2C_the_Serpent_Queen#%E3%82%B5%E3%83%BC%E3%83%9A%E3%83%B3%E3%83%88%E3%82%AF%E3%82%A3%E3%83%BC%E3%83%B3%E3%80%81%E3%83%9E%E3%83%8A%E3%83%83%E3%82%B5" target="_blank">サーペントクィーン、マナッサ</a></td>
+                </tr>
+                <tr data-kana="きまぐれなしま" data-map="Wayward Isle">
+                    <td class="col-kana">きまぐれなしま</td>
+                    <td>気まぐれな島<br>Wayward Isle</td>
+                    <td>大穴の領主<br>Lord of the Pit</td>
+                    <td class="center">２</td>
+                    <td>骨の穴</td>
+                    <td>死の王、イクタブ</td>
+                    <td>象が居ない魔術師</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Lord_of_the_Pit#%E5%A4%A7%E7%A9%B4%E3%81%AE%E9%A0%98%E4%B8%BB" target="_blank">大穴の領主</a></td>
+                </tr>
+                <tr data-kana="ひぶん" data-map="Epitaph">
+                    <td class="col-kana">ひぶん</td>
+                    <td>碑文<br>Epitaph</td>
+                    <td>恐ろしき妻、サフィラ<br>Saphira, The Dread Consort</td>
+                    <td class="center">１</td>
+                    <td>妃の墓所</td>
+                    <td>法務官の妻、アシニア</td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Saphira%2C_The_Dread_Consort#%E6%81%90%E3%82%8D%E3%81%97%E3%81%8D%E5%A6%BB%E3%80%81%E3%82%B5%E3%83%95%E3%82%A3%E3%83%A9" target="_blank">恐ろしき妻、サフィラ</a></td>
+                </tr>
+                <tr data-kana="だんがい" data-map="Cliffside">
+                    <td class="col-kana">だんがい</td>
+                    <td>断崖<br>Cliffside</td>
+                    <td>重巨兵、ブラッカス<br>Brakkus, the Juggernaut</td>
+                    <td class="center">４</td>
+                    <td>アラスタス</td>
+                    <td>救世主の片腕、トーヴィアン</td>
+                    <td>周りからバフ、ボスの岩投げで解除</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Brakkus%2C_the_Juggernaut#%E9%87%8D%E5%B7%A8%E5%85%B5%E3%80%81%E3%83%96%E3%83%A9%E3%83%83%E3%82%AB%E3%82%B9" target="_blank">重巨兵、ブラッカス</a></td>
+                </tr>
+                <tr data-kana="かんぼつあな" data-map="Sinkhole">
+                    <td class="col-kana">かんぼつあな</td>
+                    <td>陥没穴<br>Sinkhole</td>
+                    <td>白猿のヤマ<br>Yama The White</td>
+                    <td class="center">４</td>
+                    <td>死者の殿堂</td>
+                    <td>白猿のヤマ</td>
+                    <td>カオスペット猿</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Yama_The_White#%E7%99%BE%E7%8C%BF%E3%81%AE%E3%83%A4%E3%83%9E" target="_blank">白猿のヤマ</a></td>
+                </tr>
+                <tr data-kana="かるでら" data-map="Caldera">
+                    <td class="col-kana">かるでら</td>
+                    <td>カルデラ<br>Caldera</td>
+                    <td>ラヴェナスファング<br>The Ravenous Fang</td>
+                    <td class="center">４</td>
+                    <td>キンの島</td>
+                    <td>盲目の獣</td>
+                    <td>キンの島、檻でタイマンボス</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/The_Ravenous_Fang#%E3%83%A9%E3%83%B4%E3%82%A7%E3%83%8A%E3%82%B9%E3%83%95%E3%82%A1%E3%83%B3%E3%82%B0" target="_blank">ラヴェナスファング</a></td>
+                </tr>
+                <tr data-kana="ひょうりゅうぶつ" data-map="Flotsam">
+                    <td class="col-kana">ひょうりゅうぶつ</td>
+                    <td>漂流物<br>Flotsam</td>
+                    <td>深海の王、マルゴル<br>Malgor, the Nautilord</td>
+                    <td class="center">４</td>
+                    <td>旅の終わり</td>
+                    <td>ハートリン船長</td>
+                    <td>船長？イカリ落とすボス</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Malgor%2C_the_Nautilord" target="_blank">深海の王、マルゴル</a></td>
+                </tr>
+                <tr data-kana="はいヴころにー" data-map="Hive Colony">
+                    <td class="col-kana">はいヴころにー</td>
+                    <td>ハイヴコロニー<br>Hive Colony</td>
+                    <td>トゥルだったもの, エッシュだったもの<br>It That Was Tul, It That Was Esh</td>
+                    <td class="center">#N/A</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="col-link">
+                        <a href="https://poe2db.tw/jp/It_That_Was_Tul#%E3%83%88%E3%82%A5%E3%83%AB%E3%81%A0%E3%81%A3%E3%81%9F%E3%82%82%E3%81%AE" target="_blank">トゥルだったもの</a><br>
+                        <a href="https://poe2db.tw/jp/It_That_Was_Esh#%E3%82%A8%E3%83%83%E3%82%B7%E3%83%A5%E3%81%A0%E3%81%A3%E3%81%9F%E3%82%82%E3%81%AE" target="_blank">エッシュだったもの</a>
+                    </td>
+                </tr>
+                <tr data-kana="にしのげーとうぇい" data-map="Western Gateway">
+                    <td class="col-kana">にしのげーとうぇい</td>
+                    <td>西のゲートウェイ<br>Western Gateway</td>
+                    <td>先人の分離機<br>Precursor Separator</td>
+                    <td class="center">#N/A</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Precursor_Separator" target="_blank">先人の分離機</a></td>
+                </tr>
+                <tr data-kana="ひがしのげーとうぇい" data-map="Eastern Gateway">
+                    <td class="col-kana">ひがしのげーとうぇい</td>
+                    <td>東のゲートウェイ<br>Eastern Gateway</td>
+                    <td>先人の製錬機<br>Precursor Refiner</td>
+                    <td class="center">#N/A</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Precursor_Refiner" target="_blank">先人の製錬機</a></td>
+                </tr>
+                <tr data-kana="おりじんたわー" data-map="The Origin Tower">
+                    <td class="col-kana">おりじんたわー</td>
+                    <td>オリジンタワー<br>The Origin Tower</td>
+                    <td>神性のアービター<br>The Arbiter of Divinity</td>
+                    <td class="center">#N/A</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/The_Arbiter_of_Divinity#%E7%A5%9E%E6%80%A7%E3%81%AE%E3%82%A2%E3%83%BC%E3%83%93%E3%82%BF%E3%83%BC" target="_blank">神性のアービター</a></td>
+                </tr>
+                <tr data-kana="ふそのひろま" data-map="The Patriarch Halls">
+                    <td class="col-kana">ふそのひろま</td>
+                    <td>父祖の広間<br>The Patriarch Halls</td>
+                    <td>火花の番人、フィックス<br>Phyx, Sentinel of the Spark</td>
+                    <td class="center">#N/A</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Phyx%2C_Sentinel_of_the_Spark#%E7%81%AB%E8%8A%B1%E3%81%AE%E7%95%AA%E4%BA%BA%E3%80%81%E3%83%95%E3%82%A3%E3%83%83%E3%82%AF%E3%82%B9" target="_blank">火花の番人、フィックス</a></td>
+                </tr>
+                <tr data-kana="ぼそのひろま" data-map="The Matriarch Halls">
+                    <td class="col-kana">ぼそのひろま</td>
+                    <td>母祖の広間<br>The Matriarch Halls</td>
+                    <td>揺りかごの番人、フィア<br>Phya, Sentinel of the Cradle</td>
+                    <td class="center">#N/A</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Phya%2C_Sentinel_of_the_Cradle#%E6%8F%BA%E3%82%8A%E3%81%8B%E3%81%94%E3%81%AE%E7%95%AA%E4%BA%BA%E3%80%81%E3%83%95%E3%82%A3%E3%82%A2" target="_blank">揺りかごの番人、フィア</a></td>
+                </tr>
+                <tr data-kana="もえるものりす" data-map="The Burning Monolith">
+                    <td class="col-kana">もえるものりす</td>
+                    <td>燃えるモノリス<br>The Burning Monolith</td>
+                    <td>灰のアービター<br>The Arbiter of Ash</td>
+                    <td class="center">#N/A</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/The_Arbiter_of_Ash#%E7%81%B0%E3%81%AE%E3%82%A2%E3%83%BC%E3%83%93%E3%82%BF%E3%83%BC" target="_blank">灰のアービター</a></td>
+                </tr>
+                <tr data-kana="にしのえにぐまのま" data-map="Western Enigma Chamber">
+                    <td class="col-kana">にしのえにぐまのま</td>
+                    <td>西のエニグマの間<br>Western Enigma Chamber</td>
+                    <td>ジオノール伯爵, 堕落した狼、ジオノール<br>Count Geonor, Geonor, the Putrid Wolf</td>
+                    <td class="center">１</td>
+                    <td>オガムの邸宅</td>
+                    <td>ジオノール伯爵, 堕落した狼、ジオノール</td>
+                    <td>アクト１ボス</td>
+                    <td class="col-link">
+                        <a href="https://poe2db.tw/jp/Count_Geonor#%E3%82%B8%E3%82%AA%E3%83%8E%E3%83%BC%E3%83%AB%E4%BC%AF%E7%88%B5" target="_blank">ジオノール伯爵</a><br>
+                        <a href="https://poe2db.tw/jp/Geonor%2C_the_Putrid_Wolf#%E5%A0%95%E8%90%BD%E3%81%97%E3%81%9F%E7%8B%BC%E3%80%81%E3%82%B8%E3%82%AA%E3%83%8E%E3%83%BC%E3%83%AB" target="_blank">堕落した狼、ジオノール</a>
+                    </td>
+                </tr>
+                <tr data-kana="ひがしのえにぐまのま" data-map="Eastern Enigma Chamber">
+                    <td class="col-kana">ひがしのえにぐまのま</td>
+                    <td>東のエニグマの間<br>Eastern Enigma Chamber</td>
+                    <td>宮廷魔術師、ドリヤニ, ドリヤニの偉業<br>Doryani, Royal Thaumaturge, Doryani's Triumph</td>
+                    <td class="center">３</td>
+                    <td>黒の間</td>
+                    <td>宮廷魔術師、ドリヤニ, ドリヤニの偉業</td>
+                    <td>アクト３ボス</td>
+                    <td class="col-link">
+                        <a href="https://poe2db.tw/jp/Doryani%2C_Royal_Thaumaturge#%E5%AE%AE%E5%BB%B7%E9%AD%94%E8%A1%93%E5%B8%AB%E3%80%81%E3%83%89%E3%83%AA%E3%83%A4%E3%83%8B" target="_blank">宮廷魔術師、ドリヤニ</a><br>
+                        <a href="https://poe2db.tw/jp/Doryanis_Triumph#%E3%83%89%E3%83%AA%E3%83%A4%E3%83%8B%E3%81%AE%E5%81%89%E6%A5%AD" target="_blank">ドリヤニの偉業</a>
+                    </td>
+                </tr>
+                <tr data-kana="こうせつ" data-map="Snowfall">
+                    <td class="col-kana">こうせつ</td>
+                    <td>降雪<br>Snowfall</td>
+                    <td>影の幽鬼、サリエル<br>Thariel, the Umbral Wraith</td>
+                    <td class="center">幕間</td>
+                    <td>セールの巨石群</td>
+                    <td>霧の刃、シオラ</td>
+                    <td>雷の石碑エリアボス</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Thariel%2C_the_Umbral_Wraith#%E5%BD%B1%E3%81%AE%E5%B9%BD%E9%AC%BC%E3%80%81%E3%82%B5%E3%83%AA%E3%82%A8%E3%83%AB" target="_blank">影の幽鬼、サリエル</a></td>
+                </tr>
+                <tr data-kana="おんしつ" data-map="Greenhouse">
+                    <td class="col-kana">おんしつ</td>
+                    <td>温室<br>Greenhouse</td>
+                    <td>憎むべき森、ルートグラスプ<br>Rootgrasp, the Hateful Forest</td>
+                    <td class="center">１</td>
+                    <td>グレルウッド</td>
+                    <td>ブランブルガスト</td>
+                    <td>カオス植物</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Rootgrasp%2C_the_Hateful_Forest#%E6%86%8E%E3%82%80%E3%81%B9%E3%81%8D%E6%A3%AE%E3%80%81%E3%83%AB%E3%83%BC%E3%83%88%E3%82%B0%E3%83%A9%E3%82%B9%E3%83%97" target="_blank">憎むべき森、ルートグラスプ</a></td>
+                </tr>
+                <tr data-kana="たにま" data-map="Chasm">
+                    <td class="col-kana">たにま</td>
+                    <td>谷間<br>Chasm</td>
+                    <td>死の歌、ディアモラ<br>Diamora, Song of Death</td>
+                    <td class="center">４</td>
+                    <td>歌う大洞窟</td>
+                    <td>死の歌、ディアモラ</td>
+                    <td>回転石化ビームセイレーン</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Diamora%2C_Song_of_Death#%E6%AD%BB%E3%81%AE%E6%AD%8C%E3%80%81%E3%83%87%E3%82%A3%E3%82%A2%E3%83%A2%E3%83%A9" target="_blank">死の歌、ディアモラ</a></td>
+                </tr>
+                <tr data-kana="とうけんじょう" data-map="Pit">
+                    <td class="col-kana">とうけんじょう</td>
+                    <td>闘拳場<br>Pit</td>
+                    <td>重巨兵、ブラッカス<br>Brakkus, the Juggernaut</td>
+                    <td class="center">４</td>
+                    <td>アラスタス</td>
+                    <td>救世主の片腕、トーヴィアン</td>
+                    <td>周りからバフ、ボスの岩投げで解除</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Brakkus%2C_the_Juggernaut#%E9%87%8D%E5%B7%A8%E5%85%B5%E3%80%81%E3%83%96%E3%83%A9%E3%83%83%E3%82%AB%E3%82%B9" target="_blank">重巨兵、ブラッカス</a></td>
+                </tr>
+                <tr data-kana="みなと" data-map="Port">
+                    <td class="col-kana">みなと</td>
+                    <td>港<br>Port</td>
+                    <td>深海の王、マルゴル<br>Malgor, the Nautilord</td>
+                    <td class="center">４</td>
+                    <td>旅の終わり</td>
+                    <td>ハートリン船長</td>
+                    <td>船長？イカリ落とすボス</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Malgor%2C_the_Nautilord" target="_blank">深海の王、マルゴル</a></td>
+                </tr>
+                <tr data-kana="かんそうへいげん" data-map="Arid Plains">
+                    <td class="col-kana">かん感想へいげん</td>
+                    <td>乾燥平原<br>Arid Plains</td>
+                    <td>最後の一刺し、アクティ, サンドワーム、アナンドル<br>Akthi, the Final Sting, Anundr, the Sandworm</td>
+                    <td class="center">#N/A</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="col-link">
+                        <a href="https://poe2db.tw/jp/Akthi%2C_the_Final_Sting#%E6%9C%80%E5%BE%8C%E3%81%AE%E4%B8%80%E5%88%BA%E3%81%97%E3%80%81%E3%82%A2%E3%82%AF%E3%83%86%E3%82%A3" target="_blank">最後の一刺し、アクティ</a><br>
+                        <a href="https://poe2db.tw/jp/Anundr%2C_the_Sandworm#%E3%82%B5%E3%83%B3%E3%83%89%E3%83%AF%E3%83%BC%E3%83%A0%E3%80%81%E3%82%A2%E3%83%8A%E3%83%B3%E3%83%89%E3%83%AB" target="_blank">サンドワーム、アナンドル</a>
+                    </td>
+                </tr>
+                <tr data-kana="ばざー" data-map="Bazaar">
+                    <td class="col-kana">ばざー</td>
+                    <td>バザー<br>Bazaar</td>
+                    <td>バイパー・ナプアツィ<br>Viper Napuatzi</td>
+                    <td class="center">３</td>
+                    <td>ウトザール</td>
+                    <td>バイパー・ナプアツィ</td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Viper_Napuatzi#%E3%83%B4%E3%82%A1%E3%82%A4%E3%83%91%E3%83%BC%E3%83%BB%E3%83%8A%E3%83%97%E3%82%A2%E3%83%84%E3%82%A3" target="_blank">ヴァイパー・ナプアツィ</a></td>
+                </tr>
+                <tr data-kana="ゆうけつのさけめ" data-map="Sinter Rift">
+                    <td class="col-kana">ゆうけつのさけめ</td>
+                    <td>焼結の裂け目<br>Sinter Rift</td>
+                    <td>飽くなき者、ブルゴール<br>Brughor, the Insatiable</td>
+                    <td class="center">４</td>
+                    <td>火山地帯</td>
+                    <td>キンの領主、クルトォグ</td>
+                    <td>火山での巨人</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Brughor%2C_the_Insatiable#%E9%A3%BD%E3%81%8F%E3%81%AA%E3%81%8D%E8%80%85%E3%80%81%E3%83%86%E3%83%AB%E3%82%B4%E3%83%BC%E3%83%AB" target="_blank">飽くなき者、ブルゴール</a></td>
+                </tr>
+                <tr data-kana="ちょすいち" data-map="Reservoir">
+                    <td class="col-kana">ちょすいち</td>
+                    <td>貯水池<br>Reservoir</td>
+                    <td>邪悪な棘、グラッジラッシュ<br>Grudgelash, Vile Thorn</td>
+                    <td class="center">３</td>
+                    <td>砂原の沼地</td>
+                    <td>ルートドレッジ</td>
+                    <td>ゾンビ召喚の木</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Grudgelash%2C_Vile_Thorn#%E9%82%AA%E6%82%AA%E3%81%AA%E6%A3%98%E3%80%81%E3%82%B0%E3%83%A9%E3%83%83%E3%82%B8%E3%83%A9%E3%83%83%E3%82%B7%E3%83%A5" target="_blank">邪悪な棘、グラッジラッシュ</a></td>
+                </tr>
+                <tr data-kana="おうだん" data-map="Slash">
+                    <td class="col-kana">おうだん</td>
+                    <td>横断<br>Slash</td>
+                    <td>ブラッククロウ<br>The Black Crow</td>
+                    <td class="center">１</td>
+                    <td>狩場</td>
+                    <td>クロウベル</td>
+                    <td>鐘を持って２回逃げる</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/The_Black_Crow#%E3%83%96%E3%83%A9%E3%83%AC%E3%82%AF%E3%82%AF%E3%83%AD%E3%82%A6" target="_blank">ブラッククロウ</a></td>
+                </tr>
+                <tr data-kana="だいのうえん" data-map="Plantation">
+                    <td class="col-kana">だいのうえん</td>
+                    <td>大農園<br>Plantation</td>
+                    <td>灰の王、ヴァ―ロック<br>Varloch, the Ashen Lord</td>
+                    <td class="center">幕間</td>
+                    <td>ホルテンの豪邸</td>
+                    <td>ウルフリック族長</td>
+                    <td>幕間左、２体の屋敷ボスの単体版？</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Varloch%2C_the_Ashen_Lord#%E7%81%B0%E3%81%AE%E7%8E%8B%E3%80%81%E3%83%B4%E3%82%A1%E2%80%95%E3%83%AD%E3%83%83%E3%82%AF" target="_blank">灰の王、ヴァ―ロック</a></td>
+                </tr>
+                <tr data-kana="おるばらのわたりじ" data-map="Orbala's Crossing">
+                    <td class="col-kana">おるばらのわたりじ</td>
+                    <td>オルバラの渡り路<br>Orbala's Crossing</td>
+                    <td>鱗をもつもの、セラス<br>Serath, the Scaled One</td>
+                    <td class="center">幕間</td>
+                    <td>セル・カーリの聖域</td>
+                    <td>コブラの王、エルザラ</td>
+                    <td>地面から手、竜巻</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Serath%2C_the_Scaled_One#%E9%B1%97%E3%82%92%E3%82%82%E3%81%A4%E3%82%82%E3%81%AE%E3%80%81%E3%82%BB%E3%83%A9%E3%82%B9" target="_blank">鱗をもつもの、セラス</a></td>
+                </tr>
+                <tr data-kana="せいいき" data-map="Sanctuary">
+                    <td class="col-kana">せいいき</td>
+                    <td>聖域<br>Sanctuary</td>
+                    <td>忘れ去られた囚人、ピラシャ<br>Pirasha, the Forgotten Prisoner</td>
+                    <td class="center">２</td>
+                    <td>裏切り者の通路</td>
+                    <td>裏切り者、バルバラジンのバリャ</td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Pirasha%2C_the_Forgotten_Prisoner#%E5%BF%98%E3%82%8C%E5%8E%BB%E3%82%89%E3%82%8C%E3%81%9F%E5%9B%9A%E4%BA%BA%E3%80%81%E3%83%94%E3%83%A9%E3%82%B7%E3%83%A3" target="_blank">忘れ去られた囚人、ピラシャ</a></td>
+                </tr>
+                <tr data-kana="むれ" data-map="Swarm">
+                    <td class="col-kana">むれ</td>
+                    <td>群れ<br>Swarm</td>
+                    <td>残り火より生まれし者、ヴォルカー<br>Volkhar, the Emberborn</td>
+                    <td class="center">２</td>
+                    <td>セケマの試練</td>
+                    <td>大地を砕く者、ラトルケージ</td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Volkhar%2C_the_Emberborn#%E6%AE%8B%E3%82%8A%E7%81%AB%E3%82%88%E3%82%8A%E7%94%9F%E3%81%BE%E3%82%8C%E3%81%97%E8%80%85%E3%80%81%E3%83%B4%E3%82%A9%E3%83%AB%E3%82%AB%E3%83%BC" target="_blank">残り火より生まれし者、ヴォルカー</a></td>
+                </tr>
+                <tr data-kana="かりつくされたもり" data-map="Deforestation">
+                    <td class="col-kana">かりつくされたもり</td>
+                    <td>伐り尽くされた森<br>Deforestation</td>
+                    <td>同胞殺しのモーウィン<br>Morwyn, the Kinslayer</td>
+                    <td class="center">幕間</td>
+                    <td>クリアール村</td>
+                    <td>流浪の槍、リサラ</td>
+                    <td>ヴァイパー幕間バージョン</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Morwyn%2C_the_Kinslayer" target="_blank">同胞殺しのモーウィン</a></td>
+                </tr>
+                <tr data-kana="ぜっぺき" data-map="Precipice">
+                    <td class="col-kana">ぜっぺき</td>
+                    <td>断崖<br>Precipice</td>
+                    <td>地獄の業火、モルヴァク<br>Morvak, the Infernal</td>
+                    <td class="center">幕間</td>
+                    <td>ガライの門</td>
+                    <td>邪悪な炎、ヴォルナス</td>
+                    <td>門からの獣ボス</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Morvak%2C_the_Infernal#%E5%9C%B0%E7%8D%84%E3%81%AE%E6%A5%AD%E7%81%AB%E3%80%81%E3%83%A2%E3%83%AB%E3%83%B4%E3%82%A1%E3%82%AF" target="_blank">地獄の業火、モルヴァク</a></td>
+                </tr>
+                <tr data-kana="きぐすまーちのきょじょう" data-map="Ruins of Kingsmarch">
+                    <td class="col-kana">きぐすまーちのきょじょう</td>
+                    <td>キングスマーチの廃墟<br>Ruins of Kingsmarch</td>
+                    <td>異形<br>The Aberration</td>
+                    <td class="center">#N/A</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/The_Aberration" target="_blank">異形</a></td>
+                </tr>
+                <tr data-kana="ける・たーす" data-map="Caer Tarth">
+                    <td class="col-kana">ける・たーす</td>
+                    <td>ケル・タース<br>Caer Tarth</td>
+                    <td>ボダック<br>The Bodach</td>
+                    <td class="center">#N/A</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/The_Bodach" target="_blank">ボダック</a></td>
+                </tr>
+                <tr data-kana="かれやなぎ" data-map="The Withered Willow">
+                    <td class="col-kana">かれやなぎ</td>
+                    <td>枯れ柳<br>The Withered Willow</td>
+                    <td>鴉の欺く者<br>The Raven Trickster</td>
+                    <td class="center">#N/A</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/The_Raven_Trickster" target="_blank">鴉の欺く者</a></td>
+                </tr>
+                <tr data-kana="たましいのいど" data-map="The Well of Souls">
+                    <td class="col-kana">たましいのいど</td>
+                    <td>魂の井戸<br>The Well of Souls</td>
+                    <td>クーラマクの器<br>Vessel of Kulemak</td>
+                    <td class="center">#N/A</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Vessel_of_Kulemak" target="_blank">クーラマクの器</a></td>
+                </tr>
+                <tr data-kana="ひろがるじゃんぐる" data-map="Sprawling Jungle">
+                    <td class="col-kana">ひろがるじゃんぐる</td>
+                    <td>広がるジャングル<br>Sprawling Jungle</td>
+                    <td>堕ちた予言者、メドヴェッド<br>Medved, the Fallen Seer</td>
+                    <td class="center">#N/A</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Medved%2C_the_Fallen_Seer" target="_blank">堕ちた予言者、メドヴェッド</a></td>
+                </tr>
+                <tr data-kana="なげきのがけ" data-map="Mournful Cliffside">
+                    <td class="col-kana">なげきのがけ</td>
+                    <td>嘆きの崖<br>Mournful Cliffside</td>
+                    <td>最後に倒れる者、ヴォラナ<br>Vorana, Last to Fall</td>
+                    <td class="center">#N/A</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Vorana%2C_Last_to_Fall#%E6%9C%80%E5%BE%8C%E3%81%AB%E5%80%92%E3%82%8C%E3%82%8B%E8%80%85%E3%80%81%E3%83%B4%E3%82%A9%E3%83%A9%E3%83%8A" target="_blank">最後に倒れる者、ヴォラナ</a></td>
+                </tr>
+                <tr data-kana="こりつしたじいん" data-map="Secluded Temple">
+                    <td class="col-kana">こりつしたじいん</td>
+                    <td>孤立した寺院<br>Secluded Temple</td>
+                    <td>星を飲むもの、ウートレッド<br>Uhtred, the Stardrinker</td>
+                    <td class="center">#N/A</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Uhtred%2C_the_Stardrinker" target="_blank">星を飲むもの、ウートレッド</a></td>
+                </tr>
+                <tr data-kana="はなれたしま" data-map="Obscure Island">
+                    <td class="col-kana">はなれたしま</td>
+                    <td>隠れた島<br>Obscure Island</td>
+                    <td>破滅の元凶、オルロス<br>Olroth, Origin of the Fall</td>
+                    <td class="center">#N/A</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Olroth%2C_Origin_of_the_Fall#%E7%A0%B4%E6%BB%85%E3%81%AE%E5%85%83%E5%87%B6%E3%80%81%E3%82%AA%E3%83%AB%E3%83%AD%E3%82%B9" target="_blank">破滅の元凶、オルロス</a></td>
+                </tr>
+                <tr data-kana="せんじんのとう" data-map="Precursor Tower">
+                    <td class="col-kana">せんじんのとう</td>
+                    <td>先人の塔<br>Precursor Tower</td>
+                    <td>先人の転移機, 先人の抽出機<br>Precursor Displacer, Precursor Extractor</td>
+                    <td class="center">#N/A</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="col-link">
+                        <a href="https://poe2db.tw/jp/Precursor_Displacer" target="_blank">先人の転移機</a><br>
+                        <a href="https://poe2db.tw/jp/Precursor_Extractor" target="_blank">先人の抽出機</a>
+                    </td>
+                </tr>
+                <tr data-kana="せんじんのとう" data-map="Precursor Tower">
+                    <td class="col-kana">せんじんのとう</td>
+                    <td>先人の塔<br>Precursor Tower</td>
+                    <td>先人の転移機, 先人の抽出機<br>Precursor Displacer, Precursor Extractor</td>
+                    <td class="center">#N/A</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="col-link">
+                        <a href="https://poe2db.tw/jp/Precursor_Displacer" target="_blank">先人の転移機</a><br>
+                        <a href="https://poe2db.tw/jp/Precursor_Extractor" target="_blank">先人の抽出機</a>
+                    </td>
+                </tr>
+                <tr data-kana="せんじんのとう" data-map="Precursor Tower">
+                    <td class="col-kana">せんじんのとう</td>
+                    <td>先人の塔<br>Precursor Tower</td>
+                    <td>先人の転移機, 先人の抽出機<br>Precursor Displacer, Precursor Extractor</td>
+                    <td class="center">#N/A</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="col-link">
+                        <a href="https://poe2db.tw/jp/Precursor_Displacer" target="_blank">先人の転移機</a><br>
+                        <a href="https://poe2db.tw/jp/Precursor_Extractor" target="_blank">先人の抽出機</a>
+                    </td>
+                </tr>
+                <tr data-kana="せんじんのとう" data-map="Precursor Tower">
+                    <td class="col-kana">せんじんのとう</td>
+                    <td>先人の塔<br>Precursor Tower</td>
+                    <td>先人の転移機, 先人の抽出機<br>Precursor Displacer, Precursor Extractor</td>
+                    <td class="center">#N/A</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="col-link">
+                        <a href="https://poe2db.tw/jp/Precursor_Displacer" target="_blank">先人の転移機</a><br>
+                        <a href="https://poe2db.tw/jp/Precursor_Extractor" target="_blank">先人の抽出機</a>
+                    </td>
+                </tr>
+                <tr data-kana="せんじんのとう" data-map="Precursor Tower">
+                    <td class="col-kana">せんじんのとう</td>
+                    <td>先人の塔<br>Precursor Tower</td>
+                    <td>先人の転移機, 先人の抽出機<br>Precursor Displacer, Precursor Extractor</td>
+                    <td class="center">#N/A</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="col-link">
+                        <a href="https://poe2db.tw/jp/Precursor_Displacer" target="_blank">先人の転移機</a><br>
+                        <a href="https://poe2db.tw/jp/Precursor_Extractor" target="_blank">先人の抽出機</a>
+                    </td>
+                </tr>
+                <tr data-kana="むのちゅうかく" data-map="Crux of Nothingness">
+                    <td class="col-kana">むのちゅうかく</td>
+                    <td>無の中核<br>Crux of Nothingness</td>
+                    <td>霧の王, 霧の王<br>The King in the Mists, The King in the Mists</td>
+                    <td class="center">#N/A</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="col-link">
+                        <a href="https://poe2db.tw/jp/The_King_in_the_Mists#%E9%9C%A7%E3%81%AE%E7%8E%8B" target="_blank">霧の王(パターン1)</a><br>
+                        <a href="https://poe2db.tw/jp/The_King_in_the_Mists#%E9%9C%A7%E3%81%AE%E7%8E%8B" target="_blank">霧の王(パターン2)</a>
+                    </td>
+                </tr>
+                <tr data-kana="はっくつげんば" data-map="Digsite">
+                    <td class="col-kana">はっくつげんば</td>
+                    <td>発掘現場<br>Digsite</td>
+                    <td>大裁定者、オーレリアン<br>Aurelian, the Grand Adjudicator</td>
+                    <td class="center">#N/A</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Aurelian%2C_the_Grand_Adjudicator#%E5%A4%A7%E8%A3%81%E5%AE%9A%E8%80%85%E3%80%81%E3%82%AA%E3%83%BC%E3%83%AC%E3%83%AA%E3%82%A2%E3%83%B3" target="_blank">大裁定者、オーレリアン</a></td>
+                </tr>
+                <tr data-kana="こおりのどうくつ" data-map="Ice Cave">
+                    <td class="col-kana">こおりのどうくつ</td>
+                    <td>氷の洞窟<br>Ice Cave</td>
+                    <td>フロストボーンの化け物<br>The Frostborn Fiend</td>
+                    <td class="center">幕間</td>
+                    <td>吠える洞窟</td>
+                    <td>アボミネーションのイエティ</td>
+                    <td>氷の柱ゴリラ</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/The_Frostborn_Fiend#%E3%83%95%E3%83%AD%E3%82%B9%E3%83%88%E3%83%9C%E3%83%BC%E3%83%B3%E3%81%AE%E5%8C%96%E3%81%91%E7%89%A9" target="_blank">フロストボーンの化け物</a></td>
+                </tr>
+                <tr data-kana="しょうど" data-map="Razed Fields">
+                    <td class="col-kana">しょうど</td>
+                    <td>焦土<br>Razed Fields</td>
+                    <td>野蛮な炎のエルヴァラ, 霜手のラエル<br>Elvara, the Savage Flame, Rael, the Frost Hand</td>
+                    <td class="center">幕間？</td>
+                    <td>焼け焦げた農場</td>
+                    <td>黒き火葬のヘルドラ · 白き死衣のイゾルデ</td>
+                    <td>氷と炎</td>
+                    <td class="col-link">
+                        <a href="https://poe2db.tw/jp/Elvara%2C_the_Savage_Flame" target="_blank">野蛮な炎のエルヴァラ</a><br>
+                        <a href="https://poe2db.tw/jp/Rael%2C_the_Frost_Hand" target="_blank">霜手のラエル</a>
+                    </td>
+                </tr>
+                <tr data-kana="りばーほーるど" data-map="Riverhold">
+                    <td class="col-kana">りばーほーるど</td>
+                    <td>リバーホールド<br>Riverhold</td>
+                    <td>影の幽鬼、サリエル<br>Thariel, the Umbral Wraith</td>
+                    <td class="center">幕間</td>
+                    <td>セールの巨石群</td>
+                    <td>霧の刃、シオラ</td>
+                    <td>雷の石碑エリアボス</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Thariel%2C_the_Umbral_Wraith#%E5%BD%B1%E3%81%AE%E5%B9%BD%E9%AC%BC%E3%80%81%E3%82%B5%E3%83%AA%E3%82%A8%E3%83%AB" target="_blank">影の幽鬼、サリエル</a></td>
+                </tr>
+                <tr data-kana="るごさ" data-map="Rugosa">
+                    <td class="col-kana">るごさ</td>
+                    <td>ルゴサ<br>Rugosa</td>
+                    <td>深みの娘、シヴォラ<br>Syvora, Daughter of the Deep</td>
+                    <td class="center">４</td>
+                    <td>歌う大洞窟</td>
+                    <td>死の歌、ディアモラ</td>
+                    <td>回転石化ビームセイレーン</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Syvora%2C_Daughter_of_the_Deep" target="_blank">深みの娘、シヴォラ</a></td>
+                </tr>
+                <tr data-kana="れいあんじょう" data-map="Mortuary">
+                    <td class="col-kana">れいあんじょう</td>
+                    <td>霊安場<br>Mortuary</td>
+                    <td>再造のミカタ<br>Micata, the Remade</td>
+                    <td class="center">#N/A</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Micata%2C_the_Remade#%E5%86%8D%E9%80%A0%E3%81%AE%E3%83%9F%E3%82%AB%E3%82%BF" target="_blank">再造のミカタ</a></td>
+                </tr>
+                <tr data-kana="ふそのひろま" data-map="The Patriarch Halls">
+                    <td class="col-kana">ふそのひろま</td>
+                    <td>父祖の広間<br>The Patriarch Halls</td>
+                    <td>火花の番人、フィックス<br>Phyx, Sentinel of the Spark</td>
+                    <td class="center">#N/A</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Phyx%2C_Sentinel_of_the_Spark#%E7%81%AB%E8%8A%B1%E3%81%AE%E7%95%AA%E4%BA%BA%E3%80%81%E3%83%95%E3%82%A3%E3%83%83%E3%82%AF%E3%82%B9" target="_blank">火花の番人、フィックス</a></td>
+                </tr>
+                <tr data-kana="ぼそのひろま" data-map="The Matriarch Halls">
+                    <td class="col-kana">ぼそのひろま</td>
+                    <td>母祖の広間<br>The Matriarch Halls</td>
+                    <td>揺りかごの番人、フィア<br>Phya, Sentinel of the Cradle</td>
+                    <td class="center">#N/A</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Phya%2C_Sentinel_of_the_Cradle#%E6%8F%BA%E3%82%8A%E3%81%8B%E3%81%94%E3%81%AE%E7%95%AA%E4%BA%BA%E3%80%81%E3%83%95%E3%82%A3%E3%82%A2" target="_blank">揺りかごの番人、フィア</a></td>
+                </tr>
+                <tr data-kana="せんじんのとう" data-map="Precursor Tower">
+                    <td class="col-kana">せんじんのとう</td>
+                    <td>先人の塔<br>Precursor Tower</td>
+                    <td>砂丘の住人、カラッシュ<br>Karash, The Dune Dweller</td>
+                    <td class="center">２</td>
+                    <td>セケマの試練</td>
+                    <td>砂漠の母、アシャー</td>
+                    <td>サソリ</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Karash%2C_The_Dune_Dweller#%E7%A0%82%E4%B8%98%E3%81%AE%E4%BD%8F%E4%BA%BA%E3%80%81%E3%82%AB%E3%83%A9%E3%83%83%E3%82%B7%E3%83%A5" target="_blank">砂丘の住人、カラッシュ</a></td>
+                </tr>
+                <tr data-kana="けいこく" data-map="Canyon">
+                    <td class="col-kana">けいこく</td>
+                    <td>渓谷<br>Canyon</td>
+                    <td>地獄の業火、モルヴァク<br>Morvak, the Infernal</td>
+                    <td class="center">幕間</td>
+                    <td>ガライの門</td>
+                    <td>邪悪な炎、ヴォルナス</td>
+                    <td>門からの獣ボス</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Morvak%2C_the_Infernal#%E5%9C%B0%E7%8D%84%E3%81%AE%E6%A5%AD%E7%81%AB%E3%80%81%E3%83%A2%E3%83%AB%E3%83%B4%E3%82%A1%E3%82%AF" target="_blank">地獄の業火、モルヴァク</a></td>
+                </tr>
+                <tr data-kana="ごうかなひろま" data-map="Ornate Chambers">
+                    <td class="col-kana">ごうかなひろま</td>
+                    <td>豪華な広間<br>Ornate Chambers</td>
+                    <td>鱗をもつもの、セラス<br>Serath, the Scaled One</td>
+                    <td class="center">幕間</td>
+                    <td>セル・カーリの聖域</td>
+                    <td>コブラの王、エルザラ</td>
+                    <td>地面から手、竜巻</td>
+                    <td class="col-link"><a href="https://poe2db.tw/jp/Serath%2C_the_Scaled_One#%E9%B1%97%E3%82%92%E3%82%82%E3%81%A4%E3%82%82%E3%81%AE%E3%80%81%E3%82%BB%E3%83%A9%E3%82%B9" target="_blank">鱗をもつもの、セラス</a></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // --- 1. ソート機能 ---
+        let sortDirections = {
+            kana: true,
+            map: true
+        };
+
+        function sortTable(type) {
+            const tbody = document.getElementById('table-body');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            const isAscending = sortDirections[type];
+
+            rows.sort((a, b) => {
+                let valA = a.getAttribute('data-' + type).toLowerCase();
+                let valB = b.getAttribute('data-' + type).toLowerCase();
+
+                if (valA < valB) return isAscending ? -1 : 1;
+                if (valA > valB) return isAscending ? 1 : -1;
+                return 0;
+            });
+
+            sortDirections[type] = !isAscending;
+            rows.forEach(row => tbody.appendChild(row));
+        }
+
+        // --- 2. 列の非表示切り替え機能 ---
+        let columnStates = {
+            'col-kana': true,
+            'col-link': true
+        };
+
+        function toggleColumn(className, btnElement, labelText) {
+            const elements = document.querySelectorAll('.' + className);
+            columnStates[className] = !columnStates[className];
+            const isVisible = columnStates[className];
+            
+            elements.forEach(el => {
+                if (isVisible) {
+                    el.classList.remove('hide-column');
+                } else {
+                    el.classList.add('hide-column');
+                }
+            });
+
+            if (isVisible) {
+                btnElement.style.backgroundColor = "#16a085";
+                btnElement.textContent = labelText;
+            } else {
+                btnElement.style.backgroundColor = "#95a5a6";
+                btnElement.textContent = labelText + "（非表示）";
+            }
+        }
+
+        // --- 3. キーワード抽出（検索）機能 ---
+        function filterTable() {
+            const query = document.getElementById('search-box').value.toLowerCase().trim();
+            const rows = document.querySelectorAll('#table-body tr');
+
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                const kana = row.getAttribute('data-kana') || '';
+
+                if (text.includes(query) || kana.includes(query)) {
+                    row.style.display = ''; 
+                } else {
+                    row.style.display = 'none'; 
+                }
+            });
+        }
+    </script>
+</body>
+</html>
