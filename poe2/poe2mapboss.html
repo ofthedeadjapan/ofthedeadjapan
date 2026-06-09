@@ -388,7 +388,57 @@
         }
 
         function normalizeText(str) {
-            return str.replace(/[\u30a1-\u30f6]/g, m => String.fromCharCode(m.charCodeAt(0) - 0x60)).toLowerCase();
+            // ローマ字をひらがなに変換するためのマッピングデータ
+            const romajiToKana = (text) => {
+                let s = text.toLowerCase();
+                
+                // 変換辞書（長い文字列を先に置換するため、この順序が重要です）
+                const map = {
+                    // 特殊音・拗音
+                    "sha": "しゃ", "shi": "し", "shu": "しゅ", "she": "しぇ", "sho": "しょ",
+                    "cha": "ちゃ", "chi": "ち", "chu": "ちゅ", "che": "ちぇ", "cho": "ちょ",
+                    "kya": "きゃ", "kyu": "きゅ", "kyo": "きょ",
+                    "rya": "りゃ", "ryu": "りゅ", "ryo": "りょ",
+                    "tsu": "つ", "tu": "つ",
+                    
+                    // ふ/ふぁ系
+                    "fa": "ふぁ", "fi": "ふぃ", "fe": "ふぇ", "fo": "ふぉ",
+                    "fu": "ふ", "hu": "ふ",
+                    
+                    // じ/ぢ系
+                    "ji": "じ", "zi": "じ", "di": "ぢ",
+                    
+                    // 基本のあ〜わ行
+                    "ka": "か", "ki": "き", "ku": "く", "ke": "け", "ko": "こ",
+                    "sa": "さ", "su": "す", "se": "せ", "so": "そ",
+                    "ta": "た", "te": "て", "to": "と",
+                    "na": "な", "ni": "に", "nu": "ぬ", "ne": "ね", "no": "の",
+                    "ha": "は", "hi": "ひ", "he": "へ", "ho": "ほ",
+                    "ma": "ま", "mi": "み", "mu": "む", "me": "め", "mo": "も",
+                    "ya": "や", "yu": "ゆ", "yo": "よ",
+                    "ra": "ら", "ri": "り", "ru": "る", "re": "れ", "ro": "ろ",
+                    "wa": "わ", "wo": "を",
+                    
+                    // 撥音（ん）
+                    "nn": "ん", "n": "ん"
+                };
+
+                // キーを文字数の長い順に並び替える（shaを先に処理してshiが残らないようにする）
+                const keys = Object.keys(map).sort((a, b) => b.length - a.length);
+                
+                for (let key of keys) {
+                    s = s.split(key).join(map[key]);
+                }
+                return s;
+            };
+
+            // 1. 全角カタカナをひらがなに変換
+            // 2. 正規表現で見つけた英単語部分をローマ字変換
+            // 3. 全て小文字化
+            return str
+                .replace(/[\u30a1-\u30f6]/g, m => String.fromCharCode(m.charCodeAt(0) - 0x60))
+                .replace(/[a-z]+/g, m => romajiToKana(m))
+                .toLowerCase();
         }
 
         function filterTable() {
