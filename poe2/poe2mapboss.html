@@ -146,7 +146,6 @@
         th, td {
             border: 1px solid var(--border-color);
             padding: 10px;
-            text-align: left;
             line-height: 2;
         }
 
@@ -154,6 +153,11 @@
             background-color: var(--bg-th);
             color: white;
             white-space: nowrap;
+            text-align: center; /* ヘッダーを中央揃えに指定 */
+        }
+
+        td {
+            text-align: left; /* データは左揃えを維持 */
         }
 
         tr:nth-child(even) {
@@ -225,7 +229,7 @@
         <div class="controls-section">
             <div class="section-title">並び変更</div>
             <div class="button-group">
-                <button id="sort-kana" data-label="五十音" onclick="sortTable('読み仮名', 'sort-kana')">五十音：順</button>
+                <button id="sort-kana" data-label="五十音" onclick="sortTable('よみがな', 'sort-kana')">五十音：順</button>
                 <button id="sort-eng" data-label="アルファベット" onclick="sortTable('マップ英語', 'sort-eng')">アルファベット：順</button>
             </div>
         </div>
@@ -233,7 +237,7 @@
         <div class="controls-section">
             <div class="section-title">表示切替</div>
             <div class="button-group">
-                <button id="btn-kana" data-label="読み仮名" class="active" onclick="toggleColumns(['読み仮名'], 'btn-kana')">読み仮名：非表示</button>
+                <button id="btn-kana" data-label="よみがな" class="active" onclick="toggleColumns(['よみがな'], 'btn-kana')">よみがな：非表示</button>
                 <button id="btn-map" data-label="日本語名" onclick="toggleColumns(['マップ', 'ボス'], 'btn-map')">日本語名：表示</button>
                 <button id="btn-eng" data-label="英語名" onclick="toggleColumns(['マップ英語', 'ボス英語'], 'btn-eng')">英語名：表示</button>
                 <button id="btn-origin" data-label="元ボス情報" onclick="toggleColumns(['元ボスアクト', '元ボスエリア', '元ボス名', '元ボス特徴'], 'btn-origin')">元ボス情報：表示</button>
@@ -244,13 +248,18 @@
 
     <div class="search-section">
         <div class="section-title">検索</div>
-        <input type="text" id="searchInput" oninput="filterTable()" placeholder="キーワードを入力して検索...">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <input type="text" id="searchInput" oninput="filterTable()" placeholder="キーワードを入力して検索...">
+            <div style="font-size: 16px; font-weight: bold; color: var(--text-muted);">
+                参考データ: <a href="https://poe2db.tw/jp/Waystones#EndGameMaps" target="_blank" rel="noopener noreferrer" style="color: var(--btn-bg); text-decoration: none;">PoE2DB (Waystones)</a>
+            </div>
+        </div>
     </div>
 
     <table id="boss-table">
         <thead>
             <tr>
-                <th class="col-読み仮名 is-hidden-column is-hidden">読み仮名</th>
+                <th class="col-よみがな is-hidden-column is-hidden">よみがな</th>
                 <th class="col-マップ">マップ</th>
                 <th class="col-ボス">ボス</th>
                 <th class="col-マップ英語">マップ英語</th>
@@ -276,7 +285,7 @@
                 <button class="btn-success" onclick="exportDataCode()">更新データをコピー</button>
             </div>
             <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
-                ※必ずスプレッドシートの<strong>「1行目の項目名（読み仮名、マップなど）」を含めて</strong>コピーしてください。<br>
+                ※必ずスプレッドシートの<strong>「1行目の項目名（よみがな、マップなど）」を含めて</strong>コピーしてください。<br>
                 ※コピー完了後は、テキストエディタで「poe2mapboss.json」を開き、中身を上書き保存してください。
             </div>
         </div>
@@ -357,7 +366,7 @@
                 }).join('');
 
                 htmlStr += `<tr>
-                    <td class="col-読み仮名 ${getHiddenClass('読み仮名')}">${item.読み仮名 || ''}</td>
+                    <td class="col-よみがな ${getHiddenClass('よみがな')}">${item.よみがな || ''}</td>
                     <td class="col-マップ ${getHiddenClass('マップ')}">${item.マップ || ''}</td>
                     <td class="col-ボス ${getHiddenClass('ボス')}">${item.ボス || ''}</td>
                     <td class="col-マップ英語 ${getHiddenClass('マップ英語')}">${item.マップ英語 || ''}</td>
@@ -457,7 +466,7 @@
             document.getElementById('sort-eng').textContent = "アルファベット：順";
             document.querySelectorAll('[id^="sort-"]').forEach(b => b.classList.remove('active'));
             
-            // 修正箇所: 初期化時に「メモ」だけでなく「読み仮名」ボタンも非表示状態に戻す
+            // 修正箇所: 初期化時に「メモ」だけでなく「よみがな」ボタンも非表示状態に戻す
             document.querySelectorAll('[id^="btn-"]').forEach(btn => {
                 if (btn.id === 'btn-memo' || btn.id === 'btn-kana') {
                     btn.classList.add('active');
@@ -470,8 +479,8 @@
 
             document.querySelectorAll('.is-hidden-column').forEach(el => el.classList.remove('is-hidden-column', 'is-hidden'));
             
-            // 修正箇所: 初期化時に「読み仮名」列も非表示クラスを付与する
-            document.querySelectorAll('.col-メモ, .col-読み仮名').forEach(el => {
+            // 修正箇所: 初期化時に「よみがな」列も非表示クラスを付与する
+            document.querySelectorAll('.col-メモ, .col-よみがな').forEach(el => {
                 el.classList.add('is-hidden-column', 'is-hidden');
             });
             
@@ -504,7 +513,7 @@
                 const cols = rows[i].split('\t'); 
                 
                 let newItem = {
-                    "読み仮名": "", "マップ": "", "ボス": "", "マップ英語": "", "ボス英語": "",
+                    "よみがな": "", "マップ": "", "ボス": "", "マップ英語": "", "ボス英語": "",
                     "耐性アイコン": "-", "元ボスアクト": "", "元ボスエリア": "", "元ボス名": "", "元ボス特徴": "", "メモ": ""
                 };
 
