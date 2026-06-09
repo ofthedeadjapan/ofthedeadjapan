@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PoE2 メモ</title>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            margin: 0;
+            padding: 20px; /* poe2mapbossに合わせて上下余白も20pxに統一 */
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        h1, h2 {
+            color: #ffffff;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 20px;
+            margin-top: 40px;
+            margin-bottom: 20px;
+        }
+        p.note {
+            background-color: #2a2a2a;
+            padding: 15px;
+            border-left: 4px solid #e3c887;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            background-color: #222;
+        }
+        th, td {
+            border: 1px solid #444;
+            padding: 10px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        th {
+            background-color: #333;
+            color: #e3c887;
+            font-size: 14px;
+            font-weight: normal;
+            line-height: 1.4;
+        }
+        .nowrap {
+            white-space: nowrap;
+        }
+        td {
+            font-size: 15px;
+            height: 24px; /* 空行でも高さが潰れないように確保 */
+        }
+        tr:nth-child(even) {
+            background-color: #2a2a2a;
+        }
+
+        /* スタッシュ価格テーブル用の個別スタイル */
+        .store-table {
+            width: auto;         /* 幅を内容に合わせて自動調整 */
+            margin-left: auto;   /* 中央配置用 */
+            margin-right: auto;  /* 中央配置用 */
+        }
+        .store-table td:nth-child(2) {
+            text-align: right;   /* 通常価格の列を右揃え */
+            padding-right: 20px; /* 右側に少し余白を持たせる */
+        }
+
+        a.back-link {
+            color: #e3c887;
+            text-decoration: none;
+            font-size: 16px;
+            display: inline-block;
+            margin-bottom: 20px;
+            transition: color 0.2s ease;
+        }
+        a.back-link:hover {
+            color: #ffffff;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <a href="poe2index.html" class="back-link">← Indexに戻る</a>
+    
+    <div class="container">
+        <h1>PoE2 メモ</h1>
+        
+        <p class="note">
+            マジック・レア敵はモンスターレベル＋１、画面上部にライフゲージが出る敵はモンスターレベル＋２のアイテムを落とす？
+        </p>
+
+        <h2>ジェム要求ステータス</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th class="nowrap">ジェムレベル</th>
+                    <th class="nowrap">要求レベル</th>
+                    <th>要求能力値<br>（単一）</th>
+                    <th>要求能力値<br>（筋力、器用さ、知性のうち２つ）</th>
+                    <th>ドロップする<br>モンスターレベル<br>（多分）</th>
+                    <th>アセンダンシーや装備品スキルの<br>ソケット数</th>
+                </tr>
+            </thead>
+            <tbody id="gem-tbody">
+            </tbody>
+        </table>
+
+        <h2>スタッシュ価格</h2>
+        <table class="store-table">
+            <thead>
+                <tr>
+                    <th class="nowrap">スタッシュ</th>
+                    <th class="nowrap">通常</th>
+                    <th class="nowrap">セール</th>
+                    <th class="nowrap">エグザイルの<br>スタッシュ<br>バンドル</th>
+                </tr>
+            </thead>
+            <tbody id="store-tbody">
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // --- ジェムデータ ---
+        const gemData = [
+            { "gem_level": 1, "req_level": 1, "req_stat_single": 4, "req_stat_dual": 4, "drop_ilvl": "1-3", "socket_info": "" },
+            { "gem_level": 2, "req_level": 3, "req_stat_single": 9, "req_stat_dual": 7, "drop_ilvl": "3-6", "socket_info": "" },
+            { "gem_level": 3, "req_level": 6, "req_stat_single": 14, "req_stat_dual": 9, "drop_ilvl": "7-10", "socket_info": "" },
+            { "gem_level": 4, "req_level": 10, "req_stat_single": 21, "req_stat_dual": 13, "drop_ilvl": "11-14", "socket_info": "" },
+            { "gem_level": 5, "req_level": 14, "req_stat_single": 28, "req_stat_dual": 17, "drop_ilvl": "15-18", "socket_info": "" },
+            { "gem_level": 6, "req_level": 18, "req_stat_single": 35, "req_stat_dual": 20, "drop_ilvl": "19-22", "socket_info": "" },
+            { "gem_level": 7, "req_level": 22, "req_stat_single": 41, "req_stat_dual": 24, "drop_ilvl": "23-26", "socket_info": "" },
+            { "gem_level": 8, "req_level": 26, "req_stat_single": 48, "req_stat_dual": 28, "drop_ilvl": "27-31", "socket_info": "" },
+            { "gem_level": 9, "req_level": 31, "req_stat_single": 57, "req_stat_dual": 32, "drop_ilvl": "32-36", "socket_info": "" },
+            { "gem_level": 10, "req_level": 36, "req_stat_single": 65, "req_stat_dual": 37, "drop_ilvl": "37-41", "socket_info": "36レベルで3" },
+            { "gem_level": 11, "req_level": 41, "req_stat_single": 74, "req_stat_dual": 41, "drop_ilvl": "42-46", "socket_info": "" },
+            { "gem_level": 12, "req_level": 46, "req_stat_single": 82, "req_stat_dual": 46, "drop_ilvl": "47-52", "socket_info": "" },
+            { "gem_level": 13, "req_level": 52, "req_stat_single": 92, "req_stat_dual": 51, "drop_ilvl": "53-58", "socket_info": "" },
+            { "gem_level": 14, "req_level": 58, "req_stat_single": 103, "req_stat_dual": 57, "drop_ilvl": "59-64", "socket_info": "" },
+            { "gem_level": 15, "req_level": 64, "req_stat_single": 113, "req_stat_dual": 62, "drop_ilvl": "65-66", "socket_info": "64レベルで4" },
+            { "gem_level": 16, "req_level": 66, "req_stat_single": 116, "req_stat_dual": 64, "drop_ilvl": "67-72", "socket_info": "" },
+            { "gem_level": 17, "req_level": 72, "req_stat_single": 126, "req_stat_dual": 70, "drop_ilvl": "73-78", "socket_info": "" },
+            { "gem_level": 18, "req_level": 78, "req_stat_single": 137, "req_stat_dual": 75, "drop_ilvl": "79-84", "socket_info": "" },
+            { "gem_level": 19, "req_level": 84, "req_stat_single": 147, "req_stat_dual": 80, "drop_ilvl": "85-90", "socket_info": "" },
+            { "gem_level": 20, "req_level": 90, "req_stat_single": 157, "req_stat_dual": 86, "drop_ilvl": "91-", "socket_info": "90レベルで5" }
+        ];
+
+        // --- ストアアイテムデータ ---
+        const storeData = [
+            { "name": "スタッシュ", "normal": 30, "sale": "", "exiles_stash_bundle": "" },
+            { "name": "スタッシュタブ ×６", "normal": 150, "sale": "", "exiles_stash_bundle": "" },
+            { "name": "プレミアムスタッシュにアップグレード", "normal": 15, "sale": "", "exiles_stash_bundle": "" },
+            { "name": "プレミアムスタッシュ", "normal": 40, "sale": "", "exiles_stash_bundle": "" },
+            { "name": "プレミアムスタッシュ ×６", "normal": 200, "sale": "", "exiles_stash_bundle": "" },
+            { "name": "プレミアムクアッド", "normal": 150, "sale": "", "exiles_stash_bundle": "〇" },
+            { "name": "クアッドタブスタッシュ ×４", "normal": 500, "sale": "", "exiles_stash_bundle": "" },
+            { "name": "", "normal": "", "sale": "", "exiles_stash_bundle": "" }, // 何も入っていない行
+            { "name": "カレンシー", "normal": 75, "sale": "", "exiles_stash_bundle": "〇" },
+            { "name": "オーグメント", "normal": 50, "sale": "", "exiles_stash_bundle": "〇" },
+            { "name": "ジェム", "normal": 40, "sale": "", "exiles_stash_bundle": "〇" },
+            { "name": "フラグメント", "normal": 75, "sale": "", "exiles_stash_bundle": "〇" },
+            { "name": "エッセンス", "normal": 40, "sale": "", "exiles_stash_bundle": "〇" },
+            { "name": "フラスコ", "normal": 40, "sale": "", "exiles_stash_bundle": "〇" },
+            { "name": "ユニークコレクション", "normal": 140, "sale": "", "exiles_stash_bundle": "〇" },
+            { "name": "", "normal": "", "sale": "", "exiles_stash_bundle": "" }, // 何も入っていない行
+            { "name": "マップ", "normal": 150, "sale": "", "exiles_stash_bundle": "" },
+            { "name": "ブリーチ", "normal": 40, "sale": "", "exiles_stash_bundle": "〇" },
+            { "name": "エクスペディション", "normal": 40, "sale": "", "exiles_stash_bundle": "〇" },
+            { "name": "デリリウム", "normal": 40, "sale": "", "exiles_stash_bundle": "〇" },
+            { "name": "リチュアル", "normal": 40, "sale": "", "exiles_stash_bundle": "〇" },
+            { "name": "アビス", "normal": 40, "sale": "", "exiles_stash_bundle": "" },
+            { "name": "マーチャントタブ", "normal": 40, "sale": "", "exiles_stash_bundle": "〇" },
+            { "name": "マーチャントタブ ×６", "normal": 200, "sale": "", "exiles_stash_bundle": "" },
+            { "name": "", "normal": "", "sale": "", "exiles_stash_bundle": "" }, // 何も入っていない行
+            { "name": "エグザイルのスタッシュバンドル（計810）", "normal": 605, "sale": "", "exiles_stash_bundle": "" },
+            { "name": "エグザイルの盗みの指輪（拾ったカレンシー数）", "normal": 120, "sale": "", "exiles_stash_bundle": "" },
+            { "name": "銅の時の守り人（マップ時間）", "normal": "270", "sale": "", "exiles_stash_bundle": "" }
+        ];
+
+        // テーブル生成処理 (ジェム)
+        const gemTbody = document.getElementById('gem-tbody');
+        gemData.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${row.gem_level}</td>
+                <td>${row.req_level}</td>
+                <td>${row.req_stat_single}</td>
+                <td>${row.req_stat_dual}</td>
+                <td>${row.drop_ilvl}</td>
+                <td>${row.socket_info}</td>
+            `;
+            gemTbody.appendChild(tr);
+        });
+
+        // テーブル生成処理 (ストア)
+        const storeTbody = document.getElementById('store-tbody');
+        storeData.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="text-align: left;" class="nowrap">${row.name}</td>
+                <td>${row.normal}</td>
+                <td>${row.sale}</td>
+                <td>${row.exiles_stash_bundle}</td>
+            `;
+            storeTbody.appendChild(tr);
+        });
+    </script>
+</body>
+</html>

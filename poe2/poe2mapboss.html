@@ -153,11 +153,11 @@
             background-color: var(--bg-th);
             color: white;
             white-space: nowrap;
-            text-align: center; /* ヘッダーを中央揃えに指定 */
+            text-align: center;
         }
 
         td {
-            text-align: left; /* データは左揃えを維持 */
+            text-align: left;
         }
 
         tr:nth-child(even) {
@@ -212,9 +212,27 @@
         .is-hidden {
             display: none !important;
         }
+
+        /* =========================================
+           ナビゲーションリンク
+        ========================================= */
+        a.back-link {
+            color: #e3c887;
+            text-decoration: none;
+            font-size: 16px;
+            display: inline-block;
+            margin-bottom: 20px;
+            transition: color 0.2s ease;
+        }
+        a.back-link:hover {
+            color: #ffffff;
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
+
+    <a href="poe2index.html" class="back-link">← Indexに戻る</a>
 
     <h1>PoE2 ver0.5 マップボスリスト</h1>
 
@@ -388,57 +406,7 @@
         }
 
         function normalizeText(str) {
-            // ローマ字をひらがなに変換するためのマッピングデータ
-            const romajiToKana = (text) => {
-                let s = text.toLowerCase();
-                
-                // 変換辞書（長い文字列を先に置換するため、この順序が重要です）
-                const map = {
-                    // 特殊音・拗音
-                    "sha": "しゃ", "shi": "し", "shu": "しゅ", "she": "しぇ", "sho": "しょ",
-                    "cha": "ちゃ", "chi": "ち", "chu": "ちゅ", "che": "ちぇ", "cho": "ちょ",
-                    "kya": "きゃ", "kyu": "きゅ", "kyo": "きょ",
-                    "rya": "りゃ", "ryu": "りゅ", "ryo": "りょ",
-                    "tsu": "つ", "tu": "つ",
-                    
-                    // ふ/ふぁ系
-                    "fa": "ふぁ", "fi": "ふぃ", "fe": "ふぇ", "fo": "ふぉ",
-                    "fu": "ふ", "hu": "ふ",
-                    
-                    // じ/ぢ系
-                    "ji": "じ", "zi": "じ", "di": "ぢ",
-                    
-                    // 基本のあ〜わ行
-                    "ka": "か", "ki": "き", "ku": "く", "ke": "け", "ko": "こ",
-                    "sa": "さ", "su": "す", "se": "せ", "so": "そ",
-                    "ta": "た", "te": "て", "to": "と",
-                    "na": "な", "ni": "に", "nu": "ぬ", "ne": "ね", "no": "の",
-                    "ha": "は", "hi": "ひ", "he": "へ", "ho": "ほ",
-                    "ma": "ま", "mi": "み", "mu": "む", "me": "め", "mo": "も",
-                    "ya": "や", "yu": "ゆ", "yo": "よ",
-                    "ra": "ら", "ri": "り", "ru": "る", "re": "れ", "ro": "ろ",
-                    "wa": "わ", "wo": "を",
-                    
-                    // 撥音（ん）
-                    "nn": "ん", "n": "ん"
-                };
-
-                // キーを文字数の長い順に並び替える（shaを先に処理してshiが残らないようにする）
-                const keys = Object.keys(map).sort((a, b) => b.length - a.length);
-                
-                for (let key of keys) {
-                    s = s.split(key).join(map[key]);
-                }
-                return s;
-            };
-
-            // 1. 全角カタカナをひらがなに変換
-            // 2. 正規表現で見つけた英単語部分をローマ字変換
-            // 3. 全て小文字化
-            return str
-                .replace(/[\u30a1-\u30f6]/g, m => String.fromCharCode(m.charCodeAt(0) - 0x60))
-                .replace(/[a-z]+/g, m => romajiToKana(m))
-                .toLowerCase();
+            return str.replace(/[\u30a1-\u30f6]/g, m => String.fromCharCode(m.charCodeAt(0) - 0x60)).toLowerCase();
         }
 
         function filterTable() {
@@ -516,7 +484,6 @@
             document.getElementById('sort-eng').textContent = "アルファベット：順";
             document.querySelectorAll('[id^="sort-"]').forEach(b => b.classList.remove('active'));
             
-            // 修正箇所: 初期化時に「メモ」だけでなく「よみがな」ボタンも非表示状態に戻す
             document.querySelectorAll('[id^="btn-"]').forEach(btn => {
                 if (btn.id === 'btn-memo' || btn.id === 'btn-kana') {
                     btn.classList.add('active');
@@ -529,7 +496,6 @@
 
             document.querySelectorAll('.is-hidden-column').forEach(el => el.classList.remove('is-hidden-column', 'is-hidden'));
             
-            // 修正箇所: 初期化時に「よみがな」列も非表示クラスを付与する
             document.querySelectorAll('.col-メモ, .col-よみがな').forEach(el => {
                 el.classList.add('is-hidden-column', 'is-hidden');
             });
