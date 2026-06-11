@@ -5,14 +5,14 @@
     <title>PoE2 ver0.5 マップボスリスト</title>
     <style>
         /* =========================================
-           CSS変数（モダン・ダークゲーミングパレット）
+           CSS変数（目に優しいモダン・ダークゲーミングパレット）
         ========================================= */
         :root {
             --bg-body: #0f172a;
             --bg-panel: #1e293b;
             --bg-table: #1e293b;
             --bg-th: #334155;
-            --bg-tr-even: #0f172a;
+            --bg-tr-even: #172236;
             --bg-tr-hover: #2dd4bf1a;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
@@ -20,29 +20,22 @@
             --accent-gold: #d4af37;
             --accent-gold-hover: #b5952f;
             --btn-on: #10b981;
-            --btn-off: #475569;
             --btn-sort-active: #3b82f6;
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
-            --radius-md: 8px;
-            --radius-sm: 4px;
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+            --radius-md: 12px;
+            --radius-sm: 8px;
         }
 
-        /* =========================================
-           スクロールバーのカスタマイズ
-        ========================================= */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: var(--bg-body); }
         ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-        /* =========================================
-           ベーススタイル
-        ========================================= */
         body {
             background-color: var(--bg-body);
             color: var(--text-main);
             font-family: system-ui, -apple-system, sans-serif;
-            padding: 20px;
+            padding: 20px; /* poe2mapboss.html を参考に20pxへ復元 */
             margin: 0;
             line-height: 1.5;
         }
@@ -50,11 +43,11 @@
         a.back-link {
             color: var(--accent-gold);
             text-decoration: none;
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 600;
             display: inline-flex;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 20px; /* 20pxへ復元 */
             margin-left: 2.5%;
             transition: color 0.2s ease, transform 0.2s ease;
         }
@@ -68,332 +61,222 @@
             justify-content: space-between;
             align-items: flex-end;
             width: 95%;
-            margin: 0 auto 20px auto;
-            padding-bottom: 10px;
+            margin: 0 auto 20px auto; /* 20pxへ復元 */
+            padding-bottom: 8px;
             border-bottom: 1px solid var(--border-color);
         }
-        h1 {
-            margin: 0;
-            font-size: 28px;
-            font-weight: 700;
-            letter-spacing: 0.05em;
-            color: #ffffff;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-        }
-        .reference-link-top {
-            font-size: 14px;
-            color: var(--text-muted);
-        }
-        .reference-link-top a {
-            color: #60a5fa;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-        .reference-link-top a:hover {
-            color: #93c5fd;
-            text-decoration: underline;
-        }
+        h1 { margin: 0; font-size: 26px; font-weight: 700; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .reference-link-top a { color: #60a5fa; text-decoration: none; }
+        .reference-link-top a:hover { text-decoration: underline; }
 
         /* =========================================
-           コントロールパネル
+           コントロールパネル (無駄を削ぎ落とした整列レイアウト)
         ========================================= */
         .controls-wrapper {
             display: flex;
-            flex-wrap: wrap;
             align-items: center;
-            gap: 20px;
             width: 95%;
-            margin: 0 auto 20px auto;
+            margin: 0 auto 20px auto; /* パネル間、およびリストとの間隔をすべて20pxに統一 */
             background-color: var(--bg-panel);
-            padding: 16px 20px;
+            padding: 10px 16px;
             border-radius: var(--radius-md);
             border: 1px solid var(--border-color);
             box-shadow: var(--shadow-md);
             box-sizing: border-box;
+            gap: 0; /* 縦線のマージンで細かく制御するため0に設定 */
         }
 
-        .controls-section {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .section-title {
-            font-weight: 600;
-            color: var(--text-muted);
-            font-size: 13px;
-            white-space: nowrap;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .button-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            align-items: center;
-        }
-
+        /* 薄い縦線（セパレーター） */
         .separator {
             width: 1px;
-            height: 32px;
+            height: 26px;
             background-color: var(--border-color);
+            flex-shrink: 0;
+            margin: 0 16px; /* 通常の要素間の隙間 */
+        }
+        /* 指定箇所をぴったり48px空けるための広いマージン（左右24pxずつ） */
+        .separator-wide {
+            margin: 0 24px;
         }
 
-        /* =========================================
-           ボタン共通・個別スタイル
-        ========================================= */
+        /* アクションボタン（リセット・クリア）を完全固定サイズに */
         button {
-            padding: 8px 16px;
             cursor: pointer;
             border: 1px solid transparent;
             color: white;
             border-radius: var(--radius-sm);
-            font-size: 13px;
-            font-weight: 500;
+            font-size: 15px;
+            font-weight: 600;
             text-align: center;
             transition: all 0.2s ease;
             box-sizing: border-box;
             outline: none;
         }
-        button:focus-visible {
-            box-shadow: 0 0 0 2px var(--bg-body), 0 0 0 4px var(--accent-gold);
-        }
-        button:active {
-            transform: translateY(1px);
-        }
+        button:focus-visible { box-shadow: 0 0 0 2px var(--bg-body), 0 0 0 4px var(--accent-gold); }
+        button:active { transform: translateY(1px); }
 
-        .btn-yellow {
+        .btn-action {
+            width: 90px;
+            min-width: 90px;
+            flex-shrink: 0;
+            padding: 10px 0;
+            white-space: nowrap;
             background-color: var(--accent-gold);
             color: #000;
             font-weight: 700;
         }
-        .btn-yellow:hover {
-            background-color: var(--accent-gold-hover);
-            box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
-        }
+        .btn-action:hover { background-color: var(--accent-gold-hover); box-shadow: 0 0 10px rgba(212, 175, 55, 0.3); }
 
-        .btn-sort {
+        /* ドロップダウンボタン */
+        .btn-dropdown {
             background-color: var(--bg-th);
             border: 1px solid var(--border-color);
             color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+            padding: 10px 16px;
+            height: 44px;
         }
-        .btn-sort:hover { background-color: #475569; }
-        .btn-sort.active {
-            background-color: var(--btn-sort-active);
-            border-color: var(--btn-sort-active);
-            font-weight: 600;
-            box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
+        .btn-dropdown:hover { background-color: #475569; }
+
+        /* ドロップダウンメニュー */
+        .dropdown { position: relative; display: inline-block; }
+        .dropdown::after { content: ""; position: absolute; top: 100%; left: 0; width: 100%; height: 6px; background: transparent; }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8);
+            z-index: 100;
+            padding: 8px;
         }
 
-        .btn-toggle {
-            background-color: var(--btn-on);
+        /* 表示列選択もソート側と同じスマートな1列（display: block;）に変更 */
+        @media (hover: hover) {
+            #sort-dropdown:hover .dropdown-content { display: block; min-width: 260px; }
+            #column-dropdown:hover .dropdown-content { display: block; min-width: 260px; }
         }
-        .btn-toggle:hover:not(.btn-off) {
-            background-color: #059669;
-        }
-        .btn-toggle.btn-off {
-            background-color: transparent;
-            border: 1px solid var(--btn-off);
-            color: var(--text-muted);
-        }
-        .btn-toggle.btn-off:hover {
-            background-color: rgba(71, 85, 105, 0.2);
+        #sort-dropdown.show .dropdown-content { display: block; min-width: 260px; }
+        #column-dropdown.show .dropdown-content { display: block; min-width: 260px; }
+
+        .dropdown-item {
+            padding: 10px 16px;
+            font-size: 15px;
             color: var(--text-main);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: background-color 0.15s ease, border-radius 0.15s;
+            border-radius: var(--radius-sm);
+            user-select: none;
+            text-align: left;
+            white-space: nowrap;
         }
+        .dropdown-item:hover { background-color: #334155; color: #ffffff; }
+        .dropdown-item .checkmark { width: 18px; font-weight: bold; color: var(--btn-on); display: inline-block; visibility: hidden; }
+        .dropdown-item.sort-active { color: var(--btn-sort-active); font-weight: 700; }
+        .dropdown-item.sort-active .checkmark { visibility: visible; }
 
-        /* =========================================
-           入力フォームと検索・フィルター
-        ========================================= */
-        .search-input-area {
-            flex-grow: 1;
-        }
-        .search-input-area input[type="text"] {
-            width: 100%;
-            padding: 8px 12px;
-            font-size: 14px;
+        /* 入力フォームと検索カウンター */
+        #searchInput {
+            width: 320px;
+            min-width: 250px;
+            padding: 10px 14px;
+            font-size: 16px;
             border: 1px solid var(--border-color);
             background-color: rgba(0,0,0,0.2);
             color: white;
             border-radius: var(--radius-sm);
             box-sizing: border-box;
-            height: 36px;
+            height: 48px;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .search-input-area input[type="text"]:focus,
-        .search-input-area input[type="text"]:not(:placeholder-shown) {
+        #searchInput:focus, #searchInput:not(:placeholder-shown) {
             outline: none;
             border-color: #ffffff;
-            box-shadow: 0 0 10px 2px #fff, inset 0 0 10px rgba(0,0,0,0.5);
-            filter: brightness(1.2);
+            box-shadow: 0 0 10px 2px rgba(255,255,255,0.3), inset 0 0 10px rgba(0,0,0,0.3);
+        }
+
+        .search-counter {
+            font-size: 15px;
+            font-weight: bold;
+            color: var(--accent-gold);
+            white-space: nowrap;
         }
 
         /* 耐性フィルターグリッド */
         .resist-filter-grid {
             display: grid;
-            grid-template-columns: repeat(6, 32px);
-            grid-template-rows: repeat(3, 32px);
-            gap: 6px;
+            grid-template-columns: repeat(6, 34px);
+            grid-template-rows: repeat(3, 34px);
+            gap: 4px;
         }
-
         .icon-filter {
-            width: 32px;
-            height: 32px;
-            cursor: pointer;
-            border-radius: 50%;
-            border: 2px solid transparent;
-            background-color: #334155;
-            object-fit: contain;
-            padding: 0px;
-            box-sizing: border-box;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 34px; height: 34px;
+            cursor: pointer; border-radius: 50%;
+            border: 2px solid transparent; background-color: #334155;
+            object-fit: contain; box-sizing: border-box; transition: all 0.2s ease;
         }
-        .icon-filter:hover { 
-            transform: translateY(-2px) scale(1.05); 
-            background-color: #475569;
-        }
-        .icon-filter.active {
-           border: 3px solid #ffffff !important; 
-           box-shadow: 0 0 10px 2px #fff, inset 0 0 10px rgba(0,0,0,0.5); 
-           filter: brightness(1.2); 
-           z-index: 1;
-       }
+        .icon-filter:hover { transform: translateY(-2px) scale(1.05); background-color: #475569; }
+        .icon-filter.active { border: 3px solid #ffffff !important; box-shadow: 0 0 10px 2px rgba(255,255,255,0.6); filter: brightness(1.2); z-index: 1; }
         .icon-filter[data-resist*="Weak"] { background-color: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.5); }
         .icon-filter[data-resist*="Strong"] { background-color: rgba(234, 179, 8, 0.2); border: 1px solid rgba(234, 179, 8, 0.5); }
-        .icon-filter:not([data-resist*="Weak"]):not([data-resist*="Strong"]) { 
-            background-color: rgba(248, 250, 252, 0.1); 
-            border: 1px solid rgba(248, 250, 252, 0.3); 
-        }
+        .icon-filter:not([data-resist*="Weak"]):not([data-resist*="Strong"]) { background-color: rgba(248, 250, 252, 0.1); border: 1px solid rgba(248, 250, 252, 0.3); }
 
         .icon-dummy {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background-color: rgba(0,0,0,0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--border-color);
-            font-weight: bold;
-            font-size: 14px;
-            box-sizing: border-box;
-            pointer-events: none;
+            width: 34px; height: 34px; border-radius: 50%;
+            background-color: rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center;
+            color: var(--border-color); font-weight: bold; box-sizing: border-box; pointer-events: none;
             border: 1px solid rgba(255,255,255,0.05);
         }
 
         /* =========================================
-           テーブル（表）スタイル
+           テーブルスタイル
         ========================================= */
-        table {
-            border-collapse: collapse;
-            width: 95%;
-            margin: 0 auto;
-            background-color: var(--bg-table);
-            font-size: 14px;
-        }
-
-        th, td {
-            border-top: 1px solid var(--border-color);
-            border-bottom: 1px solid var(--border-color);
-            border-right: 1px solid var(--border-color);
-            border-left: 1px solid var(--border-color);
-            padding: 10px 12px;
-            line-height: 1.5;
-            white-space: pre-wrap;
-        }
-
-        th {
-            background-color: var(--bg-th);
-            color: #ffffff;
-            white-space: nowrap;
-            text-align: center;
-            font-weight: 600;
-            letter-spacing: 0.05em;
-        }
-        
+        table { border-collapse: collapse; width: 95%; margin: 0 auto; background-color: var(--bg-table); font-size: 14px; }
+        th, td { border: 1px solid var(--border-color); padding: 8px 10px; line-height: 1.5; white-space: pre-wrap; }
+        th { background-color: var(--bg-th); color: #ffffff; white-space: nowrap; text-align: center; font-weight: 600; }
         td { text-align: left; }
         
+        tr { transition: background-color 0.2s ease; }
+        tr td:first-child { transition: box-shadow 0.2s ease; }
         tr.row-even { background-color: var(--bg-tr-even); }
         tr:hover { background-color: var(--bg-tr-hover); }
+        tr:hover td:first-child { box-shadow: inset 4px 0 0 var(--accent-gold); }
 
-        .col-耐性アイコン {
-            width: 216px;
-            min-width: 216px;
-            max-width: 216px;
-            text-align: center;
-            white-space: normal;
-        }
+        .col-耐性アイコン { width: 216px; min-width: 216px; max-width: 216px; text-align: center; white-space: normal; }
+        .icon-img, .icon-text { display: inline-block; width: 30px; height: 30px; margin: 2px; vertical-align: middle; border-radius: 50%; }
+        .icon-img { object-fit: contain; box-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+        .icon-img[title*="Weak"] { background-color: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.5); }
+        .icon-img[title*="Strong"] { background-color: rgba(234, 179, 8, 0.2); border: 1px solid rgba(234, 179, 8, 0.5); }
+        .icon-img:not([title*="Weak"]):not([title*="Strong"]) { background-color: rgba(248, 250, 252, 0.1); border: 1px solid rgba(248, 250, 252, 0.3); }
+        .icon-text { line-height: 30px; text-align: center; color: #475569; font-weight: bold; font-size: 16px; }
 
-        .icon-img, .icon-text {
-            box-sizing: border-box;
-            display: inline-block;
-            width: 32px;
-            height: 32px;
-            margin: 2px;
-            vertical-align: middle;
-            border-radius: 50%;
-        }
-
-        .icon-img {
-            object-fit: contain;
-            padding: 0px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.3);
-        }
-
-        .icon-img[title*="Weak"] {
-            background-color: rgba(239, 68, 68, 0.2);
-            border: 1px solid rgba(239, 68, 68, 0.5);
-        }
-        .icon-img[title*="Strong"] {
-            background-color: rgba(234, 179, 8, 0.2);
-            border: 1px solid rgba(234, 179, 8, 0.5);
-        }
-        .icon-img:not([title*="Weak"]):not([title*="Strong"]) {
-            background-color: rgba(248, 250, 252, 0.1);
-            border: 1px solid rgba(248, 250, 252, 0.3);
-        }
-
-        .icon-text {
-            line-height: 32px;
-            text-align: center;
-            color: #475569;
-            font-weight: bold;
-            font-size: 18px;
-        }
-
-        .resist-row-inline {
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            flex-wrap: nowrap;
-            width: 100%;
-            gap: 2px;
-            margin-bottom: 2px;
-        }
+        .resist-row-inline { display: inline-flex; justify-content: center; align-items: center; flex-wrap: nowrap; width: 100%; gap: 2px; margin-bottom: 2px; }
         .resist-row-inline:last-child { margin-bottom: 0; }
-
         .is-hidden { display: none !important; }
-        
-        /* エラー表示・空表示用クラス */
-        .msg-error {
-            color: #ef4444;
-            text-align: center;
-            font-weight: bold;
-            padding: 30px;
-        }
-        .msg-empty {
-            color: var(--text-muted);
-            text-align: center;
-            font-weight: bold;
-            padding: 30px;
+        .msg-error { color: #ef4444; text-align: center; font-weight: bold; padding: 30px; }
+        .msg-empty { color: var(--text-muted); text-align: center; font-weight: bold; padding: 30px; }
+
+        @media (max-width: 900px) {
+            .controls-wrapper { flex-wrap: wrap; gap: 12px; }
+            .separator { display: none; } /* スマホ等レイアウト崩れを防ぐため画面縮小時は縦線を自動非表示 */
+            .search-counter { margin-left: 0; width: 100%; text-align: left; }
         }
     </style>
 </head>
 <body>
 
     <a href="poe2index.html" class="back-link">
-        <svg style="width:16px;height:16px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        <svg style="width:18px;height:18px;margin-right:6px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
         Indexに戻る
     </a>
 
@@ -405,79 +288,75 @@
     </div>
 
     <div class="controls-wrapper">
-        <div class="controls-section">
-            <div class="button-group">
-                <button class="btn-yellow" onclick="resetView()">リセット</button>
+        <button class="btn-action" onclick="resetView()">リセット</button>
+        
+        <div class="separator separator-wide"></div>
+        
+        <div class="dropdown" id="sort-dropdown">
+            <button class="btn-dropdown">マップ名並び ▼</button>
+            <div class="dropdown-content">
+                <div class="dropdown-item sort-active" id="sort-default" onclick="sortTable('default')"><span class="checkmark">✓</span>初期順 (DB順)</div>
+                <div class="dropdown-item" id="sort-kana-asc" onclick="sortTable('kana-asc')"><span class="checkmark">✓</span>五十音 (昇順)</div>
+                <div class="dropdown-item" id="sort-kana-desc" onclick="sortTable('kana-desc')"><span class="checkmark">✓</span>五十音 (降順)</div>
+                <div class="dropdown-item" id="sort-eng-asc" onclick="sortTable('eng-asc')"><span class="checkmark">✓</span>アルファベット (昇順)</div>
+                <div class="dropdown-item" id="sort-eng-desc" onclick="sortTable('eng-desc')"><span class="checkmark">✓</span>アルファベット (降順)</div>
             </div>
         </div>
 
-        <div class="separator"></div>
-
-        <div class="controls-section">
-            <div class="section-title">マップ名並び</div>
-            <div class="button-group">
-                <button id="sort-kana" class="btn-sort" onclick="sortTable('kana')">五十音：－</button>
-                <button id="sort-eng" class="btn-sort" onclick="sortTable('eng')">アルファベット：－</button>
-            </div>
-        </div>
-
-        <div class="separator"></div>
-
-        <div class="controls-section">
-            <div class="section-title">表示切替</div>
-            <div class="button-group">
-                <button id="btn-search-text" class="btn-toggle btn-off" onclick="toggleColumns('searchText')">検索文字</button>
-                <button id="btn-jp" class="btn-toggle" onclick="toggleColumns('jp')">日本語名</button>
-                <button id="btn-eng" class="btn-toggle" onclick="toggleColumns('eng')">英語名</button>
-                <button id="btn-origin" class="btn-toggle" onclick="toggleColumns('origin')">元ボス情報</button>
-                <button id="btn-memo" class="btn-toggle" onclick="toggleColumns('memo')">メモ</button>
+        <div class="separator separator-wide"></div> <div class="dropdown" id="column-dropdown">
+            <button class="btn-dropdown">表示列選択 ▼</button>
+            <div class="dropdown-content">
+                <div class="dropdown-item" id="item-検索用よみがな" onclick="toggleColumn('検索用よみがな')"><span class="checkmark">✓</span>検索用よみがな</div>
+                <div class="dropdown-item" id="item-ボス日本語" onclick="toggleColumn('ボス日本語')"><span class="checkmark">✓</span>ボス日本語</div>
+                <div class="dropdown-item" id="item-検索用ローマ字" onclick="toggleColumn('検索用ローマ字')"><span class="checkmark">✓</span>検索用ローマ字</div>
+                <div class="dropdown-item" id="item-元ボス名" onclick="toggleColumn('元ボス名')"><span class="checkmark">✓</span>元ボス名</div>
+                <div class="dropdown-item" id="item-マップ日本語" onclick="toggleColumn('マップ日本語')"><span class="checkmark">✓</span>マップ日本語</div>
+                <div class="dropdown-item" id="item-マップ英語" onclick="toggleColumn('マップ英語')"><span class="checkmark">✓</span>マップ英語</div>
+                <div class="dropdown-item" id="item-元ボスアクト" onclick="toggleColumn('元ボスアクト')"><span class="checkmark">✓</span>元ボスアクト</div>
+                <div class="dropdown-item" id="item-ボス英語" onclick="toggleColumn('ボス英語')"><span class="checkmark">✓</span>ボス英語</div>
+                <div class="dropdown-item" id="item-元ボスエリア" onclick="toggleColumn('元ボスエリア')"><span class="checkmark">✓</span>元ボスエリア</div>
+                <div class="dropdown-item" id="item-元ボス特徴" onclick="toggleColumn('元ボス特徴')"><span class="checkmark">✓</span>元ボス特徴</div>
+                <div class="dropdown-item" id="item-耐性アイコン" onclick="toggleColumn('耐性アイコン')"><span class="checkmark">✓</span>耐性アイコン</div>
+                <div class="dropdown-item" id="item-メモ" onclick="toggleColumn('メモ')"><span class="checkmark">✓</span>メモ</div>
             </div>
         </div>
     </div>
 
     <div class="controls-wrapper">
-        <div class="controls-section">
-            <div class="button-group">
-                <button class="btn-yellow" onclick="clearSearch()">クリア</button>
-            </div>
-        </div>
-
-        <div class="separator"></div>
-
-        <div class="controls-section" style="flex-grow: 1; max-width: 400px;">
-            <div class="section-title">抽出</div>
-            <div class="search-input-area" style="display: flex; gap: 8px;">
-                <input type="text" id="searchInput" oninput="filterTable()" placeholder="キーワードを入力して抽出..." autocomplete="off">
-            </div>
-        </div>
+        <button class="btn-action" onclick="clearSearch()">クリア</button>
         
-        <div class="separator"></div>
+        <div class="separator separator-wide"></div>
+        
+        <input type="text" id="searchInput" oninput="filterTable()" placeholder="キーワードで抽出..." autocomplete="off">
+        
+       <div class="separator separator-wide"></div>
 
-        <div class="controls-section">
-            <div class="section-title">耐性で抽出</div>
-            <div class="resist-filter-grid">
-                <div class="icon-dummy" title="ArmourWeak">-</div>
-                <div class="icon-dummy" title="EvasionWeak">-</div>
-                <img src="IconEnemyResistanceFireWeak.png" class="icon-filter" data-resist="FireWeak" title="FireWeak">
-                <img src="IconEnemyResistanceColdWeak.png" class="icon-filter" data-resist="ColdWeak" title="ColdWeak">
-                <img src="IconEnemyResistanceLightningWeak.png" class="icon-filter" data-resist="LightningWeak" title="LightningWeak">
-                <div class="icon-dummy" title="ChaosWeak">-</div>
-                
-                <img src="IconEnemyArmour.png" class="icon-filter" data-resist="Armour" title="Armour">
-                <img src="IconEnemyEvasion.png" class="icon-filter" data-resist="Evasion" title="Evasion">
-                <img src="IconEnemyResistanceFire.png" class="icon-filter" data-resist="Fire" title="Fire">
-                <img src="IconEnemyResistanceCold.png" class="icon-filter" data-resist="Cold" title="Cold">
-                <img src="IconEnemyResistanceLightning.png" class="icon-filter" data-resist="Lightning" title="Lightning">
-                <img src="MonsterResistanceIconChaos.png" class="icon-filter" data-resist="Chaos" title="Chaos">
-                
-                <img src="IconEnemyArmourStrong.png" class="icon-filter" data-resist="ArmourStrong" title="ArmourStrong">
-                <img src="IconEnemyEvasionStrong.png" class="icon-filter" data-resist="EvasionStrong" title="EvasionStrong">
-                <img src="IconEnemyResistanceFireStrong.png" class="icon-filter" data-resist="FireStrong" title="FireStrong">
-                <img src="IconEnemyResistanceColdStrong.png" class="icon-filter" data-resist="ColdStrong" title="ColdStrong">
-                <img src="IconEnemyResistanceLightningStrong.png" class="icon-filter" data-resist="LightningStrong" title="LightningStrong">
-                <img src="IconEnemyResistanceChaosStrong.png" class="icon-filter" data-resist="ChaosStrong" title="ChaosStrong">
-            </div>
+        <div class="resist-filter-grid">
+            <div class="icon-dummy" title="ArmourWeak">-</div>
+            <div class="icon-dummy" title="EvasionWeak">-</div>
+            <img src="IconEnemyResistanceFireWeak.png" class="icon-filter" data-resist="FireWeak" title="FireWeak">
+            <img src="IconEnemyResistanceColdWeak.png" class="icon-filter" data-resist="ColdWeak" title="ColdWeak">
+            <img src="IconEnemyResistanceLightningWeak.png" class="icon-filter" data-resist="LightningWeak" title="LightningWeak">
+            <div class="icon-dummy" title="ChaosWeak">-</div>
+            
+            <img src="IconEnemyArmour.png" class="icon-filter" data-resist="Armour" title="Armour">
+            <img src="IconEnemyEvasion.png" class="icon-filter" data-resist="Evasion" title="Evasion">
+            <img src="IconEnemyResistanceFire.png" class="icon-filter" data-resist="Fire" title="Fire">
+            <img src="IconEnemyResistanceCold.png" class="icon-filter" data-resist="Cold" title="Cold">
+            <img src="IconEnemyResistanceLightning.png" class="icon-filter" data-resist="Lightning" title="Lightning">
+            <img src="MonsterResistanceIconChaos.png" class="icon-filter" data-resist="Chaos" title="Chaos">
+            
+            <img src="IconEnemyArmourStrong.png" class="icon-filter" data-resist="ArmourStrong" title="ArmourStrong">
+            <img src="IconEnemyEvasionStrong.png" class="icon-filter" data-resist="EvasionStrong" title="EvasionStrong">
+            <img src="IconEnemyResistanceFireStrong.png" class="icon-filter" data-resist="FireStrong" title="FireStrong">
+            <img src="IconEnemyResistanceColdStrong.png" class="icon-filter" data-resist="ColdStrong" title="ColdStrong">
+            <img src="IconEnemyResistanceLightningStrong.png" class="icon-filter" data-resist="LightningStrong" title="LightningStrong">
+            <img src="IconEnemyResistanceChaosStrong.png" class="icon-filter" data-resist="ChaosStrong" title="ChaosStrong">
         </div>
+
+        <div class="separator separator-wide"></div>
+
+        <div id="search-counter" class="search-counter">抽出結果: -件 / 全-件</div>
     </div>
 
     <table id="boss-table">
@@ -502,95 +381,36 @@
     </table>
 
     <script>
-        // 耐性アイコン属性定義の一元化（表示順も担保）
         const RESIST_DEFINITIONS = {
-            Armour: {
-                normal: 'IconEnemyArmour.png',
-                strong: 'IconEnemyArmourStrong.png'
-            },
-            Evasion: {
-                normal: 'IconEnemyEvasion.png',
-                strong: 'IconEnemyEvasionStrong.png'
-            },
-            Fire: {
-                normal: 'IconEnemyResistanceFire.png',
-                strong: 'IconEnemyResistanceFireStrong.png',
-                weak: 'IconEnemyResistanceFireWeak.png'
-            },
-            Cold: {
-                normal: 'IconEnemyResistanceCold.png',
-                strong: 'IconEnemyResistanceColdStrong.png',
-                weak: 'IconEnemyResistanceColdWeak.png'
-            },
-            Lightning: {
-                normal: 'IconEnemyResistanceLightning.png',
-                strong: 'IconEnemyResistanceLightningStrong.png',
-                weak: 'IconEnemyResistanceLightningWeak.png'
-            },
-            Chaos: {
-                normal: 'MonsterResistanceIconChaos.png',
-                strong: 'IconEnemyResistanceChaosStrong.png'
-            }
+            Armour: { normal: 'IconEnemyArmour.png', strong: 'IconEnemyArmourStrong.png' },
+            Evasion: { normal: 'IconEnemyEvasion.png', strong: 'IconEnemyEvasionStrong.png' },
+            Fire: { normal: 'IconEnemyResistanceFire.png', strong: 'IconEnemyResistanceFireStrong.png', weak: 'IconEnemyResistanceFireWeak.png' },
+            Cold: { normal: 'IconEnemyResistanceCold.png', strong: 'IconEnemyResistanceColdStrong.png', weak: 'IconEnemyResistanceColdWeak.png' },
+            Lightning: { normal: 'IconEnemyResistanceLightning.png', strong: 'IconEnemyResistanceLightningStrong.png', weak: 'IconEnemyResistanceLightningWeak.png' },
+            Chaos: { normal: 'MonsterResistanceIconChaos.png', strong: 'IconEnemyResistanceChaosStrong.png' }
         };
 
         function getIconPath(resistKey) {
-            if (resistKey.endsWith('Strong')) {
-                const base = resistKey.replace('Strong', '');
-                return RESIST_DEFINITIONS[base]?.strong;
-            }
-
-            if (resistKey.endsWith('Weak')) {
-                const base = resistKey.replace('Weak', '');
-                return RESIST_DEFINITIONS[base]?.weak;
-            }
-
+            if (resistKey.endsWith('Strong')) return RESIST_DEFINITIONS[resistKey.replace('Strong', '')]?.strong;
+            if (resistKey.endsWith('Weak')) return RESIST_DEFINITIONS[resistKey.replace('Weak', '')]?.weak;
             return RESIST_DEFINITIONS[resistKey]?.normal;
         }
 
-        // 表示コンポーネントごとの管理テーブル（Single Source of Truth用）
-        const COLUMN_MAPPING = Object.freeze({
-            searchText: ['検索用よみがな', '検索用ローマ字'],
-            jp: ['マップ日本語', 'ボス日本語'],
-            eng: ['マップ英語', 'ボス英語'],
-            origin: ['元ボスアクト', '元ボスエリア', '元ボス名', '元ボス特徴'],
-            memo: ['メモ']
-        });
-
-        // 必須・有効ヘッダーの一覧
         const REQUIRED_HEADERS = [
             '検索用よみがな', '検索用ローマ字', 'マップ日本語', 'ボス日本語', 
             'マップ英語', 'ボス英語', '耐性アイコン', 
             '元ボスアクト', '元ボスエリア', '元ボス名', '元ボス特徴', 'メモ'
         ];
 
-        // ソート用の構造化設定
-        const SORT_CONFIG = Object.freeze({
-            kana: {
-                button: "sort-kana",
-                key: "検索用よみがな",
-                locale: "ja",
-                label: "五十音"
-            },
-            eng: {
-                button: "sort-eng",
-                key: "マップ英語",
-                locale: "en",
-                label: "アルファベット"
-            }
-        });
+        const COLUMN_COUNT = REQUIRED_HEADERS.length;
 
-        // --- 動的状態管理 ---
         let currentData = []; 
         let activeResists = new Set();
-        let sortModes = { kana: 0, eng: 0 };
 
-        // 表示列の状態管理 (true: 表示 / false: 非表示)
         const columnState = {
-            searchText: false,
-            jp: true,
-            eng: true,
-            origin: true,
-            memo: true
+            '検索用よみがな': false, '検索用ローマ字': false, 'マップ日本語': true, 'ボス日本語': true,
+            'マップ英語': true, 'ボス英語': true, '耐性アイコン': true, '元ボスアクト': true,
+            '元ボスエリア': true, '元ボス名': true, '元ボス特徴': true, 'メモ': true
         };
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -598,64 +418,58 @@
                 img.addEventListener('click', function() {
                     this.classList.toggle('active');
                     const resist = this.dataset.resist;
-                    if (this.classList.contains('active')) { activeResists.add(resist); } else { activeResists.delete(resist); }
+                    this.classList.contains('active') ? activeResists.add(resist) : activeResists.delete(resist);
                     filterTable();
                 });
             });
 
-            // Fetch成功/失敗の分離
+            document.querySelectorAll('.btn-dropdown').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const parent = this.parentElement;
+                    const isShow = parent.classList.contains('show');
+                    document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('show'));
+                    if (!isShow) parent.classList.add('show');
+                });
+            });
+
+            document.addEventListener('click', () => {
+                document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('show'));
+            });
+
             fetch('poe2mapboss.json')
-                .then(r => {
-                    if (!r.ok) throw new Error(`HTTPエラー: ${r.status} ${r.statusText}`);
-                    return r.json();
-                })
+                .then(r => { if (!r.ok) throw new Error(); return r.json(); })
                 .then(data => {
-                    currentData = data.map((item, idx) => {
-                        return { ...item, defaultOrder: idx };
-                    });
+                    currentData = data.map((item, idx) => ({ ...item, defaultOrder: idx }));
                     renderTable(currentData);
                 })
-                .catch(e => {
-                    console.error('JSON取得エラー:', e);
-                    const tbody = document.getElementById('boss-table-body');
-                    tbody.innerHTML = `<tr><td colspan="12" class="msg-error">ファイル取得失敗: JSONデータを読み込めませんでした。<br>(${e.message})</td></tr>`;
+                .catch(() => {
+                    document.getElementById('boss-table-body').innerHTML = `<tr><td colspan="${COLUMN_COUNT}" class="msg-error">ファイル取得失敗: JSONデータを読み込めませんでした。</td></tr>`;
+                    document.getElementById('search-counter').textContent = "読込エラー";
                 });
         });
 
         function clearSearch() {
             document.getElementById('searchInput').value = '';
             activeResists.clear();
-            document.querySelectorAll('.icon-filter').forEach(img => {
-                img.classList.remove('active');
-            });
+            document.querySelectorAll('.icon-filter').forEach(img => img.classList.remove('active'));
             filterTable();
         }
 
         function normalizeText(str) { 
-            if (!str) return '';
-            return String(str)
-                .normalize('NFKC')
-                .replace(/[\u30a1-\u30f6]/g, m => String.fromCharCode(m.charCodeAt(0) - 0x60))
-                .toLowerCase(); 
+            return !str ? '' : String(str).normalize('NFKC').replace(/[\u30a1-\u30f6]/g, m => String.fromCharCode(m.charCodeAt(0) - 0x60)).toLowerCase(); 
         }
 
         function getHiddenColumnsSet() {
             const hidden = new Set();
-            for (const [key, cols] of Object.entries(COLUMN_MAPPING)) {
-                if (!columnState[key]) {
-                    cols.forEach(c => hidden.add(c));
-                }
-            }
+            for (const [key, visible] of Object.entries(columnState)) if (!visible) hidden.add(key);
             return hidden;
         }
 
         function updateButtonUI() {
             for (const key of Object.keys(columnState)) {
-                const btnId = key === 'searchText' ? 'btn-search-text' : `btn-${key}`;
-                const btn = document.getElementById(btnId);
-                if (btn) {
-                    btn.classList.toggle('btn-off', !columnState[key]);
-                }
+                const checkmark = document.getElementById(`item-${key}`)?.querySelector('.checkmark');
+                if (checkmark) checkmark.style.visibility = columnState[key] ? 'visible' : 'hidden';
             }
         }
 
@@ -666,86 +480,56 @@
             REQUIRED_HEADERS.forEach(key => {
                 const td = document.createElement('td');
                 td.className = `col-${key}`;
-                
-                if (hiddenColumns.has(key)) {
-                    td.classList.add('is-hidden');
-                }
+                if (hiddenColumns.has(key)) td.classList.add('is-hidden');
 
                 if (key === '耐性アイコン') {
-                    const bossResistances = String(item.耐性アイコン || '-')
-                        .replace(/\r\n/g, '\n')
-                        .split('\n');
-
+                    const bossResistances = String(item.耐性アイコン || '-').replace(/\r\n/g, '\n').split('\n');
                     bossResistances.forEach(resistStr => {
                         const keysInRow = resistStr.split(',').map(k => k.trim()).filter(k => k !== '');
                         allRowResists.push(...keysInRow);
-
                         const rowDiv = document.createElement('div');
                         rowDiv.className = 'resist-row-inline';
 
-                        // RESIST_DEFINITIONSのキー順序に基づいて描画
                         Object.keys(RESIST_DEFINITIONS).forEach(attr => {
                             const foundKey = keysInRow.find(k => k.startsWith(attr));
-                            let iconPath = null;
-
-                            if (foundKey) {
-                                iconPath = getIconPath(foundKey);
-                            }
-
-                            if (iconPath) {
+                            if (foundKey && getIconPath(foundKey)) {
                                 const img = document.createElement('img');
-                                img.src = iconPath;
-                                img.alt = foundKey;
-                                img.title = foundKey;
-                                img.className = 'icon-img';
+                                img.src = getIconPath(foundKey); img.title = foundKey; img.className = 'icon-img';
                                 rowDiv.appendChild(img);
                             } else {
                                 const span = document.createElement('span');
-                                span.className = 'icon-text';
-                                span.textContent = '-';
+                                span.className = 'icon-text'; span.textContent = '-';
                                 rowDiv.appendChild(span);
                             }
                         });
                         td.appendChild(rowDiv);
                     });
                 } else {
-                    // 「マップ日本語」「ボス日本語」を含め、完全に新キーに準拠したシンプルな読み込み
                     td.textContent = item[key] || '';
                 }
                 tr.appendChild(td);
             });
 
             tr.dataset.resists = allRowResists.join(',');
-            
-            const rawSearchText = `${item.検索用よみがな || ''} ${item.検索用ローマ字 || ''} ${item.マップ日本語 || ''} ${item.ボス日本語 || ''} ${item.マップ英語 || ''} ${item.ボス英語 || ''} ${item.元ボスアクト || ''} ${item.元ボスエリア || ''} ${item.元ボス名 || ''} ${item.元ボス特徴 || ''} ${item.メモ || ''}`;
-            tr.dataset.search = normalizeText(rawSearchText);
-
+            tr.dataset.search = normalizeText(Object.values(item).join(' '));
             return tr;
         }
 
         function renderTable(data) {
             const tbody = document.getElementById('boss-table-body');
             tbody.innerHTML = ''; 
-
             const hiddenColumns = getHiddenColumnsSet();
             updateButtonUI();
 
-            document.querySelectorAll('th[data-key]').forEach(th => {
-                const key = th.dataset.key;
-                th.classList.toggle('is-hidden', hiddenColumns.has(key));
-            });
+            document.querySelectorAll('th[data-key]').forEach(th => th.classList.toggle('is-hidden', hiddenColumns.has(th.dataset.key)));
 
-            // データ長が0の場合の処理（空データ判定）
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="12" class="msg-empty">データが空です。<br>条件に一致する項目がありません。</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="${COLUMN_COUNT}" class="msg-empty">データが空です。</td></tr>`;
+                document.getElementById('search-counter').textContent = "抽出結果: 0件 / 全0件";
                 return;
             }
 
-            data.forEach(item => {
-                const rowElement = createRow(item, hiddenColumns);
-                tbody.appendChild(rowElement);
-            });
-
+            data.forEach(item => tbody.appendChild(createRow(item, hiddenColumns)));
             filterTable();
         }
 
@@ -755,10 +539,9 @@
             
             document.querySelectorAll('#boss-table tbody tr').forEach(row => {
                 if (!row.dataset.search) return; 
-                
                 const matchText = row.dataset.search.includes(filterText);
-                
                 let matchResist = true;
+                
                 if (activeResists.size > 0) {
                     const rowResists = row.dataset.resists ? row.dataset.resists.split(',') : [];
                     for (let r of activeResists) { if (!rowResists.includes(r)) { matchResist = false; break; } }
@@ -766,55 +549,28 @@
                 
                 const isVisible = matchText && matchResist;
                 row.classList.toggle('is-hidden', !isVisible);
-                
-                if (isVisible) {
-                    row.classList.toggle('row-even', visibleCount % 2 === 1);
-                    visibleCount++;
-                }
+                if (isVisible) row.classList.toggle('row-even', visibleCount++ % 2 === 1);
             });
+
+            document.getElementById('search-counter').textContent = `抽出結果: ${visibleCount}件 / 全${currentData.length}件`;
         }
 
-        function sortTable(type) {
-            const cfg = SORT_CONFIG[type];
-            if (!cfg) return;
+        function sortTable(mode) {
+            document.querySelectorAll('#sort-dropdown .dropdown-item').forEach(item => item.classList.remove('sort-active'));
+            document.getElementById(`sort-${mode}`)?.classList.add('sort-active');
 
-            let currentState = (sortModes[type] + 1) % 3;
-            sortModes[type] = currentState;
-
-            Object.keys(SORT_CONFIG).forEach(id => {
-                if (id !== type) {
-                    sortModes[id] = 0;
-                    const otherBtn = document.getElementById(SORT_CONFIG[id].button);
-                    if (otherBtn) {
-                        otherBtn.textContent = SORT_CONFIG[id].label + "：－";
-                        otherBtn.classList.remove('active');
-                    }
-                }
-            });
-
-            const btn = document.getElementById(cfg.button);
-            if (!btn) return;
-
-            if (currentState === 0) {
-                btn.textContent = cfg.label + "：－";
-                btn.classList.remove('active');
-                currentData.sort((a, b) => a.defaultOrder - b.defaultOrder);
-            } else {
-                const direction = (currentState === 1) ? 1 : -1;
-                btn.textContent = cfg.label + `：${currentState === 1 ? '▲' : '▼'}`;
-                btn.classList.add('active');
-
-                // 新しいキーに準拠した、無駄のないシンプルなロケールソート
-                currentData.sort((a, b) => {
-                    const cmp = String(a[cfg.key] || '').localeCompare(String(b[cfg.key] || ''), cfg.locale, { numeric: true });
-                    return cmp !== 0 ? cmp * direction : a.defaultOrder - b.defaultOrder;
-                });
-            }
-            
+            const sorters = {
+                'default': (a, b) => a.defaultOrder - b.defaultOrder,
+                'kana-asc': (a, b) => String(a["検索用よみがな"] || '').localeCompare(String(b["検索用よみがな"] || ''), 'ja', { numeric: true }) || a.defaultOrder - b.defaultOrder,
+                'kana-desc': (a, b) => String(b["検索用よみがな"] || '').localeCompare(String(a["検索用よみがな"] || ''), 'ja', { numeric: true }) || a.defaultOrder - b.defaultOrder,
+                'eng-asc': (a, b) => String(a["マップ英語"] || '').localeCompare(String(b["マップ英語"] || ''), 'en', { numeric: true }) || a.defaultOrder - b.defaultOrder,
+                'eng-desc': (a, b) => String(b["マップ英語"] || '').localeCompare(String(a["マップ英語"] || ''), 'en', { numeric: true }) || a.defaultOrder - b.defaultOrder
+            };
+            currentData.sort(sorters[mode]);
             renderTable(currentData);
         }
 
-        function toggleColumns(stateKey) {
+        function toggleColumn(stateKey) {
             if (columnState[stateKey] !== undefined) {
                 columnState[stateKey] = !columnState[stateKey];
                 renderTable(currentData);
@@ -822,23 +578,8 @@
         }
         
         function resetView() {
-            Object.keys(SORT_CONFIG).forEach(id => {
-                sortModes[id] = 0;
-                const btn = document.getElementById(SORT_CONFIG[id].button);
-                if (btn) {
-                    btn.textContent = SORT_CONFIG[id].label + "：－";
-                    btn.classList.remove('active');
-                }
-            });
-            
-            currentData.sort((a, b) => a.defaultOrder - b.defaultOrder);
-
-            columnState.searchText = false;
-            columnState.jp = true;
-            columnState.eng = true;
-            columnState.origin = true;
-            columnState.memo = true;
-
+            sortTable('default');
+            Object.keys(columnState).forEach(k => columnState[k] = !['検索用よみがな', '検索用ローマ字'].includes(k));
             renderTable(currentData);
         }
     </script>
