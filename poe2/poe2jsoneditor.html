@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>PoE2 JSON Generator (Final)</title>
+    <style>
+        :root {
+            --bg-body: #0f172a;
+            --bg-panel: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #475569;
+            --btn-gray: #475569;
+            --btn-on: #10b981;
+            --btn-blue: #3b82f6;
+            --radius-sm: 4px;
+        }
+
+        body { background-color: var(--bg-body); color: var(--text-main); font-family: system-ui, sans-serif; padding: 20px; }
+        h2, p { width: 95%; margin: 0 auto 10px auto; }
+        h2 { color: #ffffff; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+        
+        textarea { display: block; width: 95%; height: 200px; margin: 10px auto; background-color: rgba(0,0,0,0.2); color: white; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px; box-sizing: border-box; font-family: monospace; }
+        
+        .controls { display: flex; gap: 10px; margin: 0 auto 20px auto; width: 95%; flex-wrap: wrap; }
+        button { padding: 8px 16px; cursor: pointer; border: 1px solid transparent; color: white; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; transition: all 0.2s ease; background-color: var(--btn-gray); }
+        button:hover { transform: translateY(-1px); filter: brightness(1.2); }
+        .btn-green { background-color: var(--btn-on); }
+        .btn-blue { background-color: var(--btn-blue); }
+        .btn-red { background-color: #ef4444; margin-left: auto; }
+
+        #errorMessage { width: 95%; margin: 0 auto 10px auto; color: #f87171; font-weight: bold; }
+        table { width: 95%; margin: 0 auto; border-collapse: collapse; background-color: var(--bg-panel); font-size: 13px; }
+        th, td { border: 1px solid var(--border-color); padding: 10px; vertical-align: middle; }
+        th { background-color: #334155; color: #fff; }
+    </style>
+</head>
+<body>
+    <h2>JSONデータ作成・チェックツール</h2>
+    <p style="color: var(--text-muted);">スプレッドシートからヘッダー込みでペーストしてください。</p>
+    
+    <textarea id="inputArea" placeholder="ここにTSVデータをペースト"></textarea>
+    
+    <div class="controls">
+        <button onclick="processData()">プレビューを表示</button>
+        <button class="btn-green" onclick="copyJSON()">JSONをコピー</button>
+        <button class="btn-blue" onclick="downloadJSON('poe2actboss.json')">poe2actboss.jsonでDL</button>
+        <button class="btn-blue" onclick="downloadJSON('poe2mapboss.json')">poe2mapboss.jsonでDL</button>
+        <button class="btn-red" onclick="resetForm()">リセット</button>
+    </div>
+
+    <div id="errorMessage"></div>
+
+    <table id="previewTable">
+        <thead><tr id="tableHead"></tr></thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+
+    <script>
+        let currentJson = [];
+
+        function parseTSV(text) {
+            const cleanText = text.replace(/\r\n|\r/g, '\n');
+            const rows = [];
+            let row = [];
+            let cell = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < cleanText.length; i++) {
+                const char = cleanText[i];
+                const nextChar = cleanText[i + 1];
+
+                if (char === '"') {
+                    if (inQuotes && nextChar === '"') {
+                        cell += '"';
+                        i++;
+                    } else {
+                        inQuotes = !inQuotes;
+                    }
+                } else if (char === '\t' && !inQuotes) {
+                    row.push(cell);
+                    cell = '';
+                } else if (char === '\n' && !inQuotes) {
+                    row.push(cell);
+                    if (row.some(c => c.trim() !== '')) rows.push(row);
+                    row = [];
+                    cell = '';
+                } else {
+                    cell += char;
+                }
+            }
+            if (inQuotes) throw new Error('引用符が閉じられていません');
+            row.push(cell);
+            if (row.some(c => c.trim() !== '')) rows.push(row);
+            return rows;
+        }
+
+        function processData() {
+            const text = document.getElementById('inputArea').value;
+            const errorDiv = document.getElementById('errorMessage');
+            const body = document.getElementById('tableBody');
+            
+            errorDiv.textContent = '';
+            body.innerHTML = '';
+            currentJson = [];
+
+            if (!text) return alert("データがありません");
+            
+            try {
+                const data = parseTSV(text);
+                const validRows = data.filter(row => row.some(cell => cell.trim() !== ''));
+                if (validRows.length < 2) return alert("データ行が存在しません");
+
+                const headers = validRows[0].map(h => h.trim());
+                const duplicates = headers.filter((h, i) => headers.indexOf(h) !== i);
+
+                if (duplicates.length) {
+                    alert(`ヘッダが重複しています: ${[...new Set(duplicates)].join(', ')}`);
+                    return;
+                }
+                if (headers.some(h => h.trim() === '')) {
+                    alert('空のヘッダがあります');
+                    return;
+                }
+
+                const headRow = document.getElementById('tableHead');
+                headRow.innerHTML = '';
+                headers.forEach(h => {
+                    const th = document.createElement('th');
+                    th.textContent = h;
+                    headRow.appendChild(th);
+                });
+
+                const headerCount = headers.length;
+                const errors = [];
+
+                validRows.slice(1).forEach((row, index) => {
+                    // --- ここから追加 ---
+                    if (row.length < headerCount) {
+                        errors.push(`行 ${index + 2}: 列不足 (${row.length}/${headerCount})`);
+                        while (row.length < headerCount) row.push('');
+                    } else if (row.length > headerCount) {
+                        errors.push(`行 ${index + 2}: 列数が多すぎます (期待: ${headerCount}, 実際: ${row.length})`);
+                        return; // 多すぎる場合は処理をスキップ
+                    }
+                    // --- ここまで追加 ---
+
+                    const obj = {};
+                    const tr = document.createElement('tr');
+                    headers.forEach((h, i) => {
+                        const val = row[i];
+                        obj[h] = val;
+                        const td = document.createElement('td');
+                        td.textContent = val;
+                        tr.appendChild(td);
+                    });
+                    currentJson.push(obj);
+                    body.appendChild(tr);
+                });
+
+                if (errors.length > 0) {
+                    errorDiv.textContent = `⚠ ${errors.length} 件の不整合がありました。`;
+                    errors.forEach(err => {
+                        const tr = document.createElement('tr');
+                        tr.style.backgroundColor = '#7f1d1d';
+                        const td = document.createElement('td');
+                        td.colSpan = headerCount;
+                        td.style.textAlign = 'center';
+                        td.textContent = err;
+                        tr.appendChild(td);
+                        body.insertBefore(tr, body.firstChild);
+                    });
+                }
+            } catch (e) {
+                alert("パースエラー: " + e.message);
+            }
+        }
+
+        function copyJSON() {
+            if (!currentJson || currentJson.length === 0) {
+                alert("先に正常なデータをプレビューしてください");
+                return;
+            }
+            navigator.clipboard.writeText(JSON.stringify(currentJson, null, 4))
+                .then(() => alert("JSONをコピーしました！"))
+                .catch(err => { console.error(err); alert("コピーに失敗しました"); });
+        }
+
+        function downloadJSON(filename) {
+            if (!currentJson || currentJson.length === 0) {
+                alert("先に正常なデータをプレビューしてください");
+                return;
+            }
+            const blob = new Blob([JSON.stringify(currentJson, null, 4)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function resetForm() {
+            document.getElementById('inputArea').value = '';
+            document.getElementById('tableBody').innerHTML = '';
+            document.getElementById('tableHead').innerHTML = '';
+            document.getElementById('errorMessage').textContent = '';
+            currentJson = [];
+        }
+    </script>
+</body>
+</html>

@@ -221,7 +221,6 @@
             height: 36px;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        /* 入力欄が選ばれている（フォーカス）とき、または文字が入力されているときに白く光らせる */
         .search-input-area input[type="text"]:focus,
         .search-input-area input[type="text"]:not(:placeholder-shown) {
             outline: none;
@@ -375,6 +374,20 @@
         .resist-row-inline:last-child { margin-bottom: 0; }
 
         .is-hidden { display: none !important; }
+        
+        /* エラー表示・空表示用クラス */
+        .msg-error {
+            color: #ef4444;
+            text-align: center;
+            font-weight: bold;
+            padding: 30px;
+        }
+        .msg-empty {
+            color: var(--text-muted);
+            text-align: center;
+            font-weight: bold;
+            padding: 30px;
+        }
     </style>
 </head>
 <body>
@@ -403,8 +416,8 @@
         <div class="controls-section">
             <div class="section-title">マップ名並び</div>
             <div class="button-group">
-                <button id="sort-kana" class="btn-sort" onclick="sortTable('検索用よみがな', 'sort-kana')">五十音：－</button>
-                <button id="sort-eng" class="btn-sort" onclick="sortTable('マップ英語', 'sort-eng')">アルファベット：－</button>
+                <button id="sort-kana" class="btn-sort" onclick="sortTable('kana')">五十音：－</button>
+                <button id="sort-eng" class="btn-sort" onclick="sortTable('eng')">アルファベット：－</button>
             </div>
         </div>
 
@@ -413,11 +426,11 @@
         <div class="controls-section">
             <div class="section-title">表示切替</div>
             <div class="button-group">
-                <button id="btn-search-text" class="btn-toggle btn-off" data-cols="検索用よみがな,検索用ローマ字" onclick="toggleColumns('btn-search-text')">検索用よみ/ローマ字</button>
-                <button id="btn-map" class="btn-toggle" data-cols="マップ,ボス" onclick="toggleColumns('btn-map')">日本語名</button>
-                <button id="btn-eng" class="btn-toggle" data-cols="マップ英語,ボス英語" onclick="toggleColumns('btn-eng')">英語名</button>
-                <button id="btn-origin" class="btn-toggle" data-cols="元ボスアクト,元ボスエリア,元ボス名,元ボス特徴" onclick="toggleColumns('btn-origin')">元ボス情報</button>
-                <button id="btn-memo" class="btn-toggle" data-cols="メモ" onclick="toggleColumns('btn-memo')">メモ</button>
+                <button id="btn-search-text" class="btn-toggle btn-off" onclick="toggleColumns('searchText')">検索文字</button>
+                <button id="btn-jp" class="btn-toggle" onclick="toggleColumns('jp')">日本語名</button>
+                <button id="btn-eng" class="btn-toggle" onclick="toggleColumns('eng')">英語名</button>
+                <button id="btn-origin" class="btn-toggle" onclick="toggleColumns('origin')">元ボス情報</button>
+                <button id="btn-memo" class="btn-toggle" onclick="toggleColumns('memo')">メモ</button>
             </div>
         </div>
     </div>
@@ -472,8 +485,8 @@
             <tr>
                 <th class="col-検索用よみがな" data-key="検索用よみがな">検索用よみがな</th>
                 <th class="col-検索用ローマ字" data-key="検索用ローマ字">検索用ローマ字</th>
-                <th class="col-マップ" data-key="マップ">マップ</th>
-                <th class="col-ボス" data-key="ボス">ボス</th>
+                <th class="col-マップ日本語" data-key="マップ日本語">マップ日本語</th>
+                <th class="col-ボス日本語" data-key="ボス日本語">ボス日本語</th>
                 <th class="col-マップ英語" data-key="マップ英語">マップ英語</th>
                 <th class="col-ボス英語" data-key="ボス英語">ボス英語</th>
                 <th class="col-耐性アイコン" data-key="耐性アイコン">耐性アイコン</th>
@@ -489,25 +502,95 @@
     </table>
 
     <script>
-        // 必須・有効ヘッダーの一覧
-        const REQUIRED_HEADERS = ['検索用よみがな', '検索用ローマ字', 'マップ', 'ボス', 'マップ英語', 'ボス英語', '耐性アイコン', '元ボスアクト', '元ボスエリア', '元ボス名', '元ボス特徴', 'メモ'];
+        // 耐性アイコン属性定義の一元化（表示順も担保）
+        const RESIST_DEFINITIONS = {
+            Armour: {
+                normal: 'IconEnemyArmour.png',
+                strong: 'IconEnemyArmourStrong.png'
+            },
+            Evasion: {
+                normal: 'IconEnemyEvasion.png',
+                strong: 'IconEnemyEvasionStrong.png'
+            },
+            Fire: {
+                normal: 'IconEnemyResistanceFire.png',
+                strong: 'IconEnemyResistanceFireStrong.png',
+                weak: 'IconEnemyResistanceFireWeak.png'
+            },
+            Cold: {
+                normal: 'IconEnemyResistanceCold.png',
+                strong: 'IconEnemyResistanceColdStrong.png',
+                weak: 'IconEnemyResistanceColdWeak.png'
+            },
+            Lightning: {
+                normal: 'IconEnemyResistanceLightning.png',
+                strong: 'IconEnemyResistanceLightningStrong.png',
+                weak: 'IconEnemyResistanceLightningWeak.png'
+            },
+            Chaos: {
+                normal: 'MonsterResistanceIconChaos.png',
+                strong: 'IconEnemyResistanceChaosStrong.png'
+            }
+        };
 
+        function getIconPath(resistKey) {
+            if (resistKey.endsWith('Strong')) {
+                const base = resistKey.replace('Strong', '');
+                return RESIST_DEFINITIONS[base]?.strong;
+            }
+
+            if (resistKey.endsWith('Weak')) {
+                const base = resistKey.replace('Weak', '');
+                return RESIST_DEFINITIONS[base]?.weak;
+            }
+
+            return RESIST_DEFINITIONS[resistKey]?.normal;
+        }
+
+        // 表示コンポーネントごとの管理テーブル（Single Source of Truth用）
+        const COLUMN_MAPPING = Object.freeze({
+            searchText: ['検索用よみがな', '検索用ローマ字'],
+            jp: ['マップ日本語', 'ボス日本語'],
+            eng: ['マップ英語', 'ボス英語'],
+            origin: ['元ボスアクト', '元ボスエリア', '元ボス名', '元ボス特徴'],
+            memo: ['メモ']
+        });
+
+        // 必須・有効ヘッダーの一覧
+        const REQUIRED_HEADERS = [
+            '検索用よみがな', '検索用ローマ字', 'マップ日本語', 'ボス日本語', 
+            'マップ英語', 'ボス英語', '耐性アイコン', 
+            '元ボスアクト', '元ボスエリア', '元ボス名', '元ボス特徴', 'メモ'
+        ];
+
+        // ソート用の構造化設定
+        const SORT_CONFIG = Object.freeze({
+            kana: {
+                button: "sort-kana",
+                key: "検索用よみがな",
+                locale: "ja",
+                label: "五十音"
+            },
+            eng: {
+                button: "sort-eng",
+                key: "マップ英語",
+                locale: "en",
+                label: "アルファベット"
+            }
+        });
+
+        // --- 動的状態管理 ---
         let currentData = []; 
-        
-        // メモは初期表示にするため非表示セットから除外（よみ/ローマ字のみ初期非表示）
-        let hiddenColumns = new Set(['検索用よみがな', '検索用ローマ字']);
-        
-        let sortModes = { "sort-kana": 0, "sort-eng": 0 };
-        const sortLabels = { "sort-kana": "五十音", "sort-eng": "アルファベット" };
-        
         let activeResists = new Set();
-        const iconMap = {
-            "Armour": "IconEnemyArmour.png", "ArmourStrong": "IconEnemyArmourStrong.png",
-            "Evasion": "IconEnemyEvasion.png", "EvasionStrong": "IconEnemyEvasionStrong.png",
-            "Fire": "IconEnemyResistanceFire.png", "FireStrong": "IconEnemyResistanceFireStrong.png", "FireWeak": "IconEnemyResistanceFireWeak.png",
-            "Cold": "IconEnemyResistanceCold.png", "ColdStrong": "IconEnemyResistanceColdStrong.png", "ColdWeak": "IconEnemyResistanceColdWeak.png",
-            "Lightning": "IconEnemyResistanceLightning.png", "LightningStrong": "IconEnemyResistanceLightningStrong.png", "LightningWeak": "IconEnemyResistanceLightningWeak.png",
-            "Chaos": "MonsterResistanceIconChaos.png", "ChaosStrong": "IconEnemyResistanceChaosStrong.png"
+        let sortModes = { kana: 0, eng: 0 };
+
+        // 表示列の状態管理 (true: 表示 / false: 非表示)
+        const columnState = {
+            searchText: false,
+            jp: true,
+            eng: true,
+            origin: true,
+            memo: true
         };
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -520,11 +603,10 @@
                 });
             });
 
+            // Fetch成功/失敗の分離
             fetch('poe2mapboss.json')
                 .then(r => {
-                    if (!r.ok) {
-                        throw new Error(`HTTPエラー: ${r.status} ${r.statusText}`);
-                    }
+                    if (!r.ok) throw new Error(`HTTPエラー: ${r.status} ${r.statusText}`);
                     return r.json();
                 })
                 .then(data => {
@@ -534,8 +616,9 @@
                     renderTable(currentData);
                 })
                 .catch(e => {
-                    console.warn('JSONファイルの読み込みに失敗しました。', e);
-                    renderTable(currentData); 
+                    console.error('JSON取得エラー:', e);
+                    const tbody = document.getElementById('boss-table-body');
+                    tbody.innerHTML = `<tr><td colspan="12" class="msg-error">ファイル取得失敗: JSONデータを読み込めませんでした。<br>(${e.message})</td></tr>`;
                 });
         });
 
@@ -556,16 +639,32 @@
                 .toLowerCase(); 
         }
 
-        function createRow(item) {
+        function getHiddenColumnsSet() {
+            const hidden = new Set();
+            for (const [key, cols] of Object.entries(COLUMN_MAPPING)) {
+                if (!columnState[key]) {
+                    cols.forEach(c => hidden.add(c));
+                }
+            }
+            return hidden;
+        }
+
+        function updateButtonUI() {
+            for (const key of Object.keys(columnState)) {
+                const btnId = key === 'searchText' ? 'btn-search-text' : `btn-${key}`;
+                const btn = document.getElementById(btnId);
+                if (btn) {
+                    btn.classList.toggle('btn-off', !columnState[key]);
+                }
+            }
+        }
+
+        function createRow(item, hiddenColumns) {
             const tr = document.createElement('tr');
-            const colKeys = REQUIRED_HEADERS;
-            const attrSlots = ['Armour', 'Evasion', 'Fire', 'Cold', 'Lightning', 'Chaos'];
             let allRowResists = [];
 
-            colKeys.forEach(key => {
+            REQUIRED_HEADERS.forEach(key => {
                 const td = document.createElement('td');
-                
-                // 日本語クラス名（col-検索用よみがな等）へシンプルに統一
                 td.className = `col-${key}`;
                 
                 if (hiddenColumns.has(key)) {
@@ -584,11 +683,18 @@
                         const rowDiv = document.createElement('div');
                         rowDiv.className = 'resist-row-inline';
 
-                        attrSlots.forEach(attr => {
+                        // RESIST_DEFINITIONSのキー順序に基づいて描画
+                        Object.keys(RESIST_DEFINITIONS).forEach(attr => {
                             const foundKey = keysInRow.find(k => k.startsWith(attr));
-                            if (foundKey && iconMap[foundKey]) {
+                            let iconPath = null;
+
+                            if (foundKey) {
+                                iconPath = getIconPath(foundKey);
+                            }
+
+                            if (iconPath) {
                                 const img = document.createElement('img');
-                                img.src = iconMap[foundKey];
+                                img.src = iconPath;
                                 img.alt = foundKey;
                                 img.title = foundKey;
                                 img.className = 'icon-img';
@@ -603,6 +709,7 @@
                         td.appendChild(rowDiv);
                     });
                 } else {
+                    // 「マップ日本語」「ボス日本語」を含め、完全に新キーに準拠したシンプルな読み込み
                     td.textContent = item[key] || '';
                 }
                 tr.appendChild(td);
@@ -610,7 +717,7 @@
 
             tr.dataset.resists = allRowResists.join(',');
             
-            const rawSearchText = `${item.検索用よみがな || ''} ${item.検索用ローマ字 || ''} ${item.マップ || ''} ${item.ボス || ''} ${item.マップ英語 || ''} ${item.ボス英語 || ''} ${item.元ボスアクト || ''} ${item.元ボスエリア || ''} ${item.元ボス名 || ''} ${item.元ボス特徴 || ''} ${item.メモ || ''}`;
+            const rawSearchText = `${item.検索用よみがな || ''} ${item.検索用ローマ字 || ''} ${item.マップ日本語 || ''} ${item.ボス日本語 || ''} ${item.マップ英語 || ''} ${item.ボス英語 || ''} ${item.元ボスアクト || ''} ${item.元ボスエリア || ''} ${item.元ボス名 || ''} ${item.元ボス特徴 || ''} ${item.メモ || ''}`;
             tr.dataset.search = normalizeText(rawSearchText);
 
             return tr;
@@ -620,18 +727,22 @@
             const tbody = document.getElementById('boss-table-body');
             tbody.innerHTML = ''; 
 
+            const hiddenColumns = getHiddenColumnsSet();
+            updateButtonUI();
+
             document.querySelectorAll('th[data-key]').forEach(th => {
                 const key = th.dataset.key;
                 th.classList.toggle('is-hidden', hiddenColumns.has(key));
             });
 
+            // データ長が0の場合の処理（空データ判定）
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: var(--text-muted); font-weight: bold; padding: 30px;">poe2mapboss.json 読込失敗、またはデータがありません</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="12" class="msg-empty">データが空です。<br>条件に一致する項目がありません。</td></tr>`;
                 return;
             }
 
             data.forEach(item => {
-                const rowElement = createRow(item);
+                const rowElement = createRow(item, hiddenColumns);
                 tbody.appendChild(rowElement);
             });
 
@@ -663,84 +774,70 @@
             });
         }
 
-        function sortTable(key, btnId) {
-            const btn = document.getElementById(btnId);
-            let currentState = sortModes[btnId];
-            
-            currentState = (currentState + 1) % 3;
-            sortModes[btnId] = currentState;
+        function sortTable(type) {
+            const cfg = SORT_CONFIG[type];
+            if (!cfg) return;
 
-            Object.keys(sortModes).forEach(id => {
-                if (id !== btnId) {
+            let currentState = (sortModes[type] + 1) % 3;
+            sortModes[type] = currentState;
+
+            Object.keys(SORT_CONFIG).forEach(id => {
+                if (id !== type) {
                     sortModes[id] = 0;
-                    const otherBtn = document.getElementById(id);
-                    otherBtn.textContent = sortLabels[id] + "：－";
-                    otherBtn.classList.remove('active');
+                    const otherBtn = document.getElementById(SORT_CONFIG[id].button);
+                    if (otherBtn) {
+                        otherBtn.textContent = SORT_CONFIG[id].label + "：－";
+                        otherBtn.classList.remove('active');
+                    }
                 }
             });
 
+            const btn = document.getElementById(cfg.button);
+            if (!btn) return;
+
             if (currentState === 0) {
-                btn.textContent = sortLabels[btnId] + "：－";
+                btn.textContent = cfg.label + "：－";
                 btn.classList.remove('active');
                 currentData.sort((a, b) => a.defaultOrder - b.defaultOrder);
             } else {
-                const locale = key.includes('英語') ? 'en' : 'ja';
-                
-                if (currentState === 1) {
-                    btn.textContent = sortLabels[btnId] + "：▲";
-                    btn.classList.add('active');
-                    currentData.sort((a, b) => {
-                        const cmp = String(a[key] || '').localeCompare(String(b[key] || ''), locale, { numeric: true });
-                        return cmp !== 0 ? cmp : a.defaultOrder - b.defaultOrder;
-                    });
-                } else if (currentState === 2) {
-                    btn.textContent = sortLabels[btnId] + "：▼";
-                    btn.classList.add('active');
-                    currentData.sort((a, b) => {
-                        const cmp = String(b[key] || '').localeCompare(String(a[key] || ''), locale, { numeric: true });
-                        return cmp !== 0 ? cmp : a.defaultOrder - b.defaultOrder;
-                    });
-                }
+                const direction = (currentState === 1) ? 1 : -1;
+                btn.textContent = cfg.label + `：${currentState === 1 ? '▲' : '▼'}`;
+                btn.classList.add('active');
+
+                // 新しいキーに準拠した、無駄のないシンプルなロケールソート
+                currentData.sort((a, b) => {
+                    const cmp = String(a[cfg.key] || '').localeCompare(String(b[cfg.key] || ''), cfg.locale, { numeric: true });
+                    return cmp !== 0 ? cmp * direction : a.defaultOrder - b.defaultOrder;
+                });
             }
             
             renderTable(currentData);
         }
 
-        function toggleColumns(btnId) {
-            const btn = document.getElementById(btnId);
-            const cols = btn.dataset.cols.split(',');
-            
-            btn.classList.toggle('btn-off');
-            const isCurrentlyHidden = btn.classList.contains('btn-off');
-            
-            cols.forEach(c => {
-                if (isCurrentlyHidden) {
-                    hiddenColumns.add(c);
-                } else {
-                    hiddenColumns.delete(c);
+        function toggleColumns(stateKey) {
+            if (columnState[stateKey] !== undefined) {
+                columnState[stateKey] = !columnState[stateKey];
+                renderTable(currentData);
+            }
+        }
+        
+        function resetView() {
+            Object.keys(SORT_CONFIG).forEach(id => {
+                sortModes[id] = 0;
+                const btn = document.getElementById(SORT_CONFIG[id].button);
+                if (btn) {
+                    btn.textContent = SORT_CONFIG[id].label + "：－";
+                    btn.classList.remove('active');
                 }
             });
-
-            renderTable(currentData);
-        }
-
-        function resetView() {
-            sortModes = { "sort-kana": 0, "sort-eng": 0 };
-            document.getElementById('sort-kana').textContent = "五十音：－";
-            document.getElementById('sort-kana').classList.remove('active');
-            document.getElementById('sort-eng').textContent = "アルファベット：－";
-            document.getElementById('sort-eng').classList.remove('active');
             
             currentData.sort((a, b) => a.defaultOrder - b.defaultOrder);
 
-            // リセット時もメモ欄は表示（非表示セットから除外）
-            hiddenColumns = new Set(['検索用よみがな', '検索用ローマ字']);
-            
-            document.getElementById('btn-search-text').classList.add('btn-off');
-            document.getElementById('btn-map').classList.remove('btn-off');
-            document.getElementById('btn-eng').classList.remove('btn-off');
-            document.getElementById('btn-origin').classList.remove('btn-off');
-            document.getElementById('btn-memo').classList.remove('btn-off'); // メモのオン状態を維持
+            columnState.searchText = false;
+            columnState.jp = true;
+            columnState.eng = true;
+            columnState.origin = true;
+            columnState.memo = true;
 
             renderTable(currentData);
         }
