@@ -16,7 +16,7 @@
             --bg-tr-hover: #2dd4bf1a;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
-            --border-color: #334155;
+            --border-color: #475569;
             --accent-gold: #d4af37;
             --accent-gold-hover: #b5952f;
             --btn-on: #10b981;
@@ -219,29 +219,15 @@
             border-radius: var(--radius-sm);
             box-sizing: border-box;
             height: 36px;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .search-input-area input[type="text"]:focus {
+        /* 入力欄が選ばれている（フォーカス）とき、または文字が入力されているときに白く光らせる */
+        .search-input-area input[type="text"]:focus,
+        .search-input-area input[type="text"]:not(:placeholder-shown) {
             outline: none;
-            border-color: var(--accent-gold);
-            box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
-        }
-
-        textarea.update-textarea {
-            padding: 10px 12px;
-            background-color: rgba(0,0,0,0.2);
-            border: 1px solid var(--border-color);
-            color: white;
-            border-radius: var(--radius-sm);
-            font-size: 14px;
-            box-sizing: border-box;
-            resize: vertical;
-            white-space: pre;
-            transition: border-color 0.2s;
-        }
-        textarea.update-textarea:focus {
-            outline: none;
-            border-color: var(--accent-gold);
+            border-color: #ffffff;
+            box-shadow: 0 0 10px 2px #fff, inset 0 0 10px rgba(0,0,0,0.5);
+            filter: brightness(1.2);
         }
 
         /* 耐性フィルターグリッド */
@@ -269,10 +255,11 @@
             background-color: #475569;
         }
         .icon-filter.active {
-            border: 2px solid var(--accent-gold);
-            box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
-            background-color: rgba(212, 175, 55, 0.1);
-        }
+           border: 3px solid #ffffff !important; 
+           box-shadow: 0 0 10px 2px #fff, inset 0 0 10px rgba(0,0,0,0.5); 
+           filter: brightness(1.2); 
+           z-index: 1;
+       }
         .icon-filter[data-resist*="Weak"] { background-color: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.5); }
         .icon-filter[data-resist*="Strong"] { background-color: rgba(234, 179, 8, 0.2); border: 1px solid rgba(234, 179, 8, 0.5); }
         .icon-filter:not([data-resist*="Weak"]):not([data-resist*="Strong"]) { 
@@ -406,9 +393,8 @@
 
     <div class="controls-wrapper">
         <div class="controls-section">
-            <div class="section-title">初期化</div>
             <div class="button-group">
-                <button class="btn-yellow" onclick="resetView()">初期化</button>
+                <button class="btn-yellow" onclick="resetView()">リセット</button>
             </div>
         </div>
 
@@ -417,7 +403,7 @@
         <div class="controls-section">
             <div class="section-title">マップ名並び</div>
             <div class="button-group">
-                <button id="sort-kana" class="btn-sort" onclick="sortTable('よみがな', 'sort-kana')">五十音：－</button>
+                <button id="sort-kana" class="btn-sort" onclick="sortTable('検索用よみがな', 'sort-kana')">五十音：－</button>
                 <button id="sort-eng" class="btn-sort" onclick="sortTable('マップ英語', 'sort-eng')">アルファベット：－</button>
             </div>
         </div>
@@ -427,21 +413,28 @@
         <div class="controls-section">
             <div class="section-title">表示切替</div>
             <div class="button-group">
-                <button id="btn-kana" class="btn-toggle btn-off" data-cols="よみがな" onclick="toggleColumns('btn-kana')">よみがな</button>
+                <button id="btn-search-text" class="btn-toggle btn-off" data-cols="検索用よみがな,検索用ローマ字" onclick="toggleColumns('btn-search-text')">検索用よみ/ローマ字</button>
                 <button id="btn-map" class="btn-toggle" data-cols="マップ,ボス" onclick="toggleColumns('btn-map')">日本語名</button>
                 <button id="btn-eng" class="btn-toggle" data-cols="マップ英語,ボス英語" onclick="toggleColumns('btn-eng')">英語名</button>
                 <button id="btn-origin" class="btn-toggle" data-cols="元ボスアクト,元ボスエリア,元ボス名,元ボス特徴" onclick="toggleColumns('btn-origin')">元ボス情報</button>
-                <button id="btn-memo" class="btn-toggle btn-off" data-cols="メモ" onclick="toggleColumns('btn-memo')">メモ</button>
+                <button id="btn-memo" class="btn-toggle" data-cols="メモ" onclick="toggleColumns('btn-memo')">メモ</button>
             </div>
         </div>
     </div>
 
     <div class="controls-wrapper">
+        <div class="controls-section">
+            <div class="button-group">
+                <button class="btn-yellow" onclick="clearSearch()">クリア</button>
+            </div>
+        </div>
+
+        <div class="separator"></div>
+
         <div class="controls-section" style="flex-grow: 1; max-width: 400px;">
             <div class="section-title">抽出</div>
             <div class="search-input-area" style="display: flex; gap: 8px;">
-                <input type="text" id="searchInput" oninput="filterTable()" placeholder="キーワードを入力して抽出...">
-                <button class="btn-sort" style="white-space: nowrap;" onclick="clearSearch()">クリア</button>
+                <input type="text" id="searchInput" oninput="filterTable()" placeholder="キーワードを入力して抽出..." autocomplete="off">
             </div>
         </div>
         
@@ -477,42 +470,32 @@
     <table id="boss-table">
         <thead>
             <tr>
-                <th class="col-よみがな">よみがな</th>
-                <th class="col-マップ">マップ</th>
-                <th class="col-ボス">ボス</th>
-                <th class="col-マップ英語">マップ英語</th>
-                <th class="col-ボス英語">ボス英語</th>
-                <th class="col-耐性アイコン">耐性アイコン</th>
-                <th class="col-元ボスアクト">元ボスアクト</th>
-                <th class="col-元ボスエリア">元ボスエリア</th>
-                <th class="col-元ボス名">元ボス名</th>
-                <th class="col-元ボス特徴">元ボス特徴</th>
-                <th class="col-メモ">メモ</th>
+                <th class="col-検索用よみがな" data-key="検索用よみがな">検索用よみがな</th>
+                <th class="col-検索用ローマ字" data-key="検索用ローマ字">検索用ローマ字</th>
+                <th class="col-マップ" data-key="マップ">マップ</th>
+                <th class="col-ボス" data-key="ボス">ボス</th>
+                <th class="col-マップ英語" data-key="マップ英語">マップ英語</th>
+                <th class="col-ボス英語" data-key="ボス英語">ボス英語</th>
+                <th class="col-耐性アイコン" data-key="耐性アイコン">耐性アイコン</th>
+                <th class="col-元ボスアクト" data-key="元ボスアクト">元ボスアクト</th>
+                <th class="col-元ボスエリア" data-key="元ボスエリア">元ボスエリア</th>
+                <th class="col-元ボス名" data-key="元ボス名">元ボス名</th>
+                <th class="col-元ボス特徴" data-key="元ボス特徴">元ボス特徴</th>
+                <th class="col-メモ" data-key="メモ">メモ</th>
             </tr>
         </thead>
         <tbody id="boss-table-body">
         </tbody>
     </table>
 
-    <div class="controls-wrapper" style="margin-top: 20px; justify-content: flex-start;">
-        <div class="controls-section">
-            <div class="section-title">データ一括更新</div>
-            <div class="button-group">
-                <textarea id="pasteArea" class="update-textarea" style="width: 500px; height: 36px;" placeholder="スプレッドシートからヘッダー込みでペースト"></textarea>
-                <button class="btn-yellow" onclick="updateGrid()">反映する</button>
-                <button class="btn-yellow" onclick="exportDataCode()">更新データをコピー</button>
-            </div>
-        </div>
-    </div>
-
     <script>
         // 必須・有効ヘッダーの一覧
-        const REQUIRED_HEADERS = ['よみがな', 'マップ', 'ボス', 'マップ英語', 'ボス英語', '耐性アイコン', '元ボスアクト', '元ボスエリア', '元ボス名', '元ボス特徴', 'メモ'];
+        const REQUIRED_HEADERS = ['検索用よみがな', '検索用ローマ字', 'マップ', 'ボス', 'マップ英語', 'ボス英語', '耐性アイコン', '元ボスアクト', '元ボスエリア', '元ボス名', '元ボス特徴', 'メモ'];
 
         let currentData = []; 
         
-        // 非表示にするカラムを変数で一元管理（初期状態で隠すものをセット）
-        let hiddenColumns = new Set(['よみがな', 'メモ']);
+        // メモは初期表示にするため非表示セットから除外（よみ/ローマ字のみ初期非表示）
+        let hiddenColumns = new Set(['検索用よみがな', '検索用ローマ字']);
         
         let sortModes = { "sort-kana": 0, "sort-eng": 0 };
         const sortLabels = { "sort-kana": "五十音", "sort-eng": "アルファベット" };
@@ -545,7 +528,6 @@
                     return r.json();
                 })
                 .then(data => {
-                    // 読み込み時に「スプレッドシート基準（元の並び順）」として defaultOrder を付与
                     currentData = data.map((item, idx) => {
                         return { ...item, defaultOrder: idx };
                     });
@@ -553,19 +535,16 @@
                 })
                 .catch(e => {
                     console.warn('JSONファイルの読み込みに失敗しました。', e);
-                    const tbody = document.getElementById('boss-table-body');
-                    tbody.innerHTML = `
-                        <tr>
-                            <td colspan="11" style="text-align: center; color: var(--text-muted); font-weight: bold; padding: 30px;">
-                                poe2mapboss.json 読込失敗
-                            </td>
-                        </tr>
-                    `;
+                    renderTable(currentData); 
                 });
         });
 
         function clearSearch() {
             document.getElementById('searchInput').value = '';
+            activeResists.clear();
+            document.querySelectorAll('.icon-filter').forEach(img => {
+                img.classList.remove('active');
+            });
             filterTable();
         }
 
@@ -585,9 +564,10 @@
 
             colKeys.forEach(key => {
                 const td = document.createElement('td');
+                
+                // 日本語クラス名（col-検索用よみがな等）へシンプルに統一
                 td.className = `col-${key}`;
                 
-                // 一元管理している hiddenColumns の状態に基づいて非表示クラスを付与
                 if (hiddenColumns.has(key)) {
                     td.classList.add('is-hidden');
                 }
@@ -630,7 +610,7 @@
 
             tr.dataset.resists = allRowResists.join(',');
             
-            const rawSearchText = `${item.よみがな || ''} ${item.マップ || ''} ${item.ボス || ''} ${item.マップ英語 || ''} ${item.ボス英語 || ''} ${item.元ボスアクト || ''} ${item.元ボスエリア || ''} ${item.元ボス名 || ''} ${item.元ボス特徴 || ''} ${item.メモ || ''}`;
+            const rawSearchText = `${item.検索用よみがな || ''} ${item.検索用ローマ字 || ''} ${item.マップ || ''} ${item.ボス || ''} ${item.マップ英語 || ''} ${item.ボス英語 || ''} ${item.元ボスアクト || ''} ${item.元ボスエリア || ''} ${item.元ボス名 || ''} ${item.元ボス特徴 || ''} ${item.メモ || ''}`;
             tr.dataset.search = normalizeText(rawSearchText);
 
             return tr;
@@ -640,11 +620,15 @@
             const tbody = document.getElementById('boss-table-body');
             tbody.innerHTML = ''; 
 
-            // ヘッダー (th) の表示・非表示も hiddenColumns 変数の状態に同期させる
-            document.querySelectorAll('th[class^="col-"]').forEach(th => {
-                const key = Array.from(th.classList).find(c => c.startsWith('col-')).replace('col-', '');
+            document.querySelectorAll('th[data-key]').forEach(th => {
+                const key = th.dataset.key;
                 th.classList.toggle('is-hidden', hiddenColumns.has(key));
             });
+
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: var(--text-muted); font-weight: bold; padding: 30px;">poe2mapboss.json 読込失敗、またはデータがありません</td></tr>`;
+                return;
+            }
 
             data.forEach(item => {
                 const rowElement = createRow(item);
@@ -660,7 +644,7 @@
             
             document.querySelectorAll('#boss-table tbody tr').forEach(row => {
                 if (!row.dataset.search) return; 
-
+                
                 const matchText = row.dataset.search.includes(filterText);
                 
                 let matchResist = true;
@@ -698,7 +682,6 @@
             if (currentState === 0) {
                 btn.textContent = sortLabels[btnId] + "：－";
                 btn.classList.remove('active');
-                // defaultOrder を基準にソートを初期状態に戻す
                 currentData.sort((a, b) => a.defaultOrder - b.defaultOrder);
             } else {
                 const locale = key.includes('英語') ? 'en' : 'ja';
@@ -706,7 +689,6 @@
                 if (currentState === 1) {
                     btn.textContent = sortLabels[btnId] + "：▲";
                     btn.classList.add('active');
-                    // 改善：同一値の場合は defaultOrder で並べて安定ソートを保証する
                     currentData.sort((a, b) => {
                         const cmp = String(a[key] || '').localeCompare(String(b[key] || ''), locale, { numeric: true });
                         return cmp !== 0 ? cmp : a.defaultOrder - b.defaultOrder;
@@ -714,7 +696,6 @@
                 } else if (currentState === 2) {
                     btn.textContent = sortLabels[btnId] + "：▼";
                     btn.classList.add('active');
-                    // 改善：同一値の場合は defaultOrder で並べて安定ソートを保証する
                     currentData.sort((a, b) => {
                         const cmp = String(b[key] || '').localeCompare(String(a[key] || ''), locale, { numeric: true });
                         return cmp !== 0 ? cmp : a.defaultOrder - b.defaultOrder;
@@ -732,7 +713,6 @@
             btn.classList.toggle('btn-off');
             const isCurrentlyHidden = btn.classList.contains('btn-off');
             
-            // Setオブジェクト (hiddenColumns) の状態を更新
             cols.forEach(c => {
                 if (isCurrentlyHidden) {
                     hiddenColumns.add(c);
@@ -741,178 +721,28 @@
                 }
             });
 
-            // 状態が更新されたので、テーブル全体を再描画して反映
             renderTable(currentData);
         }
 
         function resetView() {
-            location.reload();
-        }
-
-        function parseTSV(text) {
-            const lines = [];
-            let row = [];
-            let cell = '';
-            let inQuotes = false;
-
-            for (let i = 0; i < text.length; i++) {
-                const c = text[i];
-                const next = text[i + 1];
-
-                if (inQuotes) {
-                    if (c === '"') {
-                        if (next === '"') {
-                            cell += '"';
-                            i++; 
-                        } else {
-                            inQuotes = false;
-                        }
-                    } else {
-                        cell += c;
-                    }
-                } else {
-                    if (c === '"') {
-                        inQuotes = true;
-                    } else if (c === '\t') {
-                        row.push(cell);
-                        cell = '';
-                    } else if (c === '\r' || c === '\n') {
-                        row.push(cell);
-                        cell = '';
-                        if (row.some(x => x !== '')) {
-                            lines.push(row);
-                        }
-                        row = [];
-                        if (c === '\r' && next === '\n') {
-                            i++; 
-                        }
-                    } else {
-                        cell += c;
-                    }
-                }
-            }
-            if (cell || row.length > 0) {
-                row.push(cell);
-                if (row.some(x => x !== '')) {
-                    lines.push(row);
-                }
-            }
-            return lines;
-        }
-
-        function updateGrid() {
-            const text = document.getElementById('pasteArea').value;
-            if (!text.trim()) {
-                alert("エラー: ペーストされたデータが空です。スプレッドシートからヘッダー行を含めてデータをコピーして貼り付けてください。");
-                return;
-            }
-
-            const parsed = parseTSV(text);
-            if (parsed.length < 1) {
-                alert("エラー: 正しい形式のデータ（TSV形式）としてパースできませんでした。");
-                return;
-            }
-
-            const headers = parsed[0].map(h => h.trim());
-
-            const validHeaders = headers.filter(h => REQUIRED_HEADERS.includes(h));
-            if (validHeaders.length === 0) {
-                alert(`エラー: 有効なヘッダーが1つも見つかりません。\nデータを更新するには、以下のいずれかの項目を1行目（ヘッダー）に含めてください。\n\n【有効なヘッダー一覧】\n・${REQUIRED_HEADERS.join('\n・')}`);
-                return;
-            }
-
-            if (parsed.length < 2) {
-                alert("エラー: ヘッダー行は認識されましたが、更新するためのレコードデータ（2行目以降）が見つかりません。");
-                return;
-            }
-
-            const newRows = parsed.slice(1);
-
-            if (newRows.length < currentData.length) {
-                const diff = currentData.length - newRows.length;
-                const confirmDelete = confirm(`警告: ペーストされたデータ（${newRows.length}件）が現在のデータ（${currentData.length}件）より少ないです。\n\n不足している末尾の ${diff} 件の既存データを自動的に削除して、スプレッドシートの行数と完全に同期しますか？\n（「キャンセル」を押すと更新処理を中断します）`);
-                if (!confirmDelete) {
-                    return;
-                }
-            }
-
-            // 改善：データ破壊を防ぐための完全なトランザクション更新
-            let nextData = [];
-
-            try {
-                // ペースト前の既存データを defaultOrder 基準にソートしておく
-                currentData.sort((a, b) => a.defaultOrder - b.defaultOrder);
-
-                newRows.forEach((cols, idx) => {
-                    let newItem;
-                    if (idx < currentData.length) {
-                        // 既存行の更新：安全なディープコピーで元データを保護
-                        newItem = structuredClone(currentData[idx]);
-                    } else {
-                        // 新規行の追加：完全な初期化
-                        newItem = { 
-                            "よみがな": "", "マップ": "", "ボス": "", 
-                            "マップ英語": "", "ボス英語": "", "耐性アイコン": "-", 
-                            "元ボスアクト": "", "元ボスエリア": "", "元ボス名": "", "元ボス特徴": "", "メモ": ""
-                        };
-                    }
-
-                    // ペーストされた列のみを安全に上書き反映
-                    headers.forEach((h, i) => { 
-                        if (validHeaders.includes(h)) {
-                            newItem[h] = cols[i] ? cols[i].trim() : ""; 
-                        }
-                    });
-
-                    // 新しい並び順をセットして一時配列へ格納
-                    newItem.defaultOrder = idx;
-                    nextData.push(newItem);
-                });
-            } catch (e) {
-                console.error("データ処理中に例外発生:", e);
-                alert("エラー: データの処理中に予期せぬ例外が発生しました。\n更新処理は安全に中断され、既存のデータは保護されました。");
-                return;
-            }
-
-            // --- コミットフェーズ ---
-            // エラーなく全行の構築が完了した場合のみ、本番データを一括置換する
-            currentData = nextData;
-            
-            // ソート状態をリセット
             sortModes = { "sort-kana": 0, "sort-eng": 0 };
             document.getElementById('sort-kana').textContent = "五十音：－";
             document.getElementById('sort-kana').classList.remove('active');
             document.getElementById('sort-eng').textContent = "アルファベット：－";
             document.getElementById('sort-eng').classList.remove('active');
+            
+            currentData.sort((a, b) => a.defaultOrder - b.defaultOrder);
+
+            // リセット時もメモ欄は表示（非表示セットから除外）
+            hiddenColumns = new Set(['検索用よみがな', '検索用ローマ字']);
+            
+            document.getElementById('btn-search-text').classList.add('btn-off');
+            document.getElementById('btn-map').classList.remove('btn-off');
+            document.getElementById('btn-eng').classList.remove('btn-off');
+            document.getElementById('btn-origin').classList.remove('btn-off');
+            document.getElementById('btn-memo').classList.remove('btn-off'); // メモのオン状態を維持
 
             renderTable(currentData);
-            document.getElementById('pasteArea').value = '';
-            
-            alert(`【データ更新完了】\n対象カラム: [ ${validHeaders.join(', ')} ]\n\nスプレッドシートから [ ${newRows.length} ] 件のデータを読み込み、テーブルを正常に同期・更新しました。`);
-        }
-
-        function exportDataCode() {
-            if (currentData.length === 0) {
-                alert("エラー: コピーする対象のマップデータがテーブル内に存在しません。");
-                return;
-            }
-
-            // 出力時は内部管理用の defaultOrder を除去してクリーンなJSONに戻す
-            const cleanData = currentData.map(item => {
-                const copy = structuredClone(item);
-                delete copy.defaultOrder;
-                return copy;
-            });
-
-            const jsonString = JSON.stringify(cleanData, null, 4);
-
-            navigator.clipboard.writeText(jsonString)
-                .then(() => {
-                    alert(`【コピー完了】\n現在画面に保持されている [ ${cleanData.length} ] 件のマップデータを、ファイル保存用のJSON形式でクリップボードにコピーしました。\nそのまま「poe2mapboss.json」ファイルに貼り付けて上書き保存が可能です。`);
-                })
-                .catch(err => {
-                    alert(`エラー: クリップボードへの自動コピーに失敗しました。お使いのブラウザの権限設定を確認してください。\n[エラー詳細: ${err}]`);
-                });
         }
     </script>
 </body>
