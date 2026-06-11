@@ -5,12 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PoE2 メモ</title>
     <style>
+        /* =========================================
+           CSS変数（poe2mapboss準拠）
+        ========================================= */
+        :root {
+            --bg-body: #0f172a;
+            --bg-panel: #1e293b;
+            --bg-table: #1e293b;
+            --bg-th: #334155;
+            --bg-tr-even: #0f172a;
+            --bg-tr-hover: #2dd4bf1a;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --accent-gold: #d4af37;
+            --accent-gold-hover: #fef08a;
+        }
+
         body {
-            background-color: #1a1a1a;
-            color: #e0e0e0;
-            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: system-ui, -apple-system, sans-serif;
             margin: 0;
-            padding: 20px; /* poe2mapbossに合わせて上下余白も20pxに統一 */
+            padding: 20px;
             line-height: 1.6;
         }
         .container {
@@ -19,12 +36,13 @@
         }
         h1, h2 {
             color: #ffffff;
-            border-bottom: 1px solid #444;
+            border-bottom: 1px solid var(--border-color);
             padding-bottom: 10px;
         }
         h1 {
             font-size: 24px;
             margin-bottom: 20px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
         h2 {
             font-size: 20px;
@@ -32,69 +50,79 @@
             margin-bottom: 20px;
         }
         p.note {
-            background-color: #2a2a2a;
+            background-color: var(--bg-panel);
             padding: 15px;
-            border-left: 4px solid #e3c887;
+            border-left: 4px solid var(--accent-gold);
             margin-bottom: 30px;
             font-size: 16px;
+            border-radius: 0 4px 4px 0;
         }
         table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 30px;
-            background-color: #222;
+            background-color: var(--bg-table);
         }
         th, td {
-            border: 1px solid #444;
+            border: 1px solid var(--border-color);
             padding: 10px;
             text-align: center;
             vertical-align: middle;
         }
         th {
-            background-color: #333;
-            color: #e3c887;
+            background-color: var(--bg-th);
+            color: #ffffff;
             font-size: 14px;
-            font-weight: normal;
+            font-weight: 600;
             line-height: 1.4;
+            letter-spacing: 0.05em;
         }
         .nowrap {
             white-space: nowrap;
         }
         td {
             font-size: 15px;
-            height: 24px; /* 空行でも高さが潰れないように確保 */
+            height: 24px;
         }
         tr:nth-child(even) {
-            background-color: #2a2a2a;
+            background-color: var(--bg-tr-even);
+        }
+        tr:hover {
+            background-color: var(--bg-tr-hover);
         }
 
         /* スタッシュ価格テーブル用の個別スタイル */
         .store-table {
-            width: auto;         /* 幅を内容に合わせて自動調整 */
-            margin-left: auto;   /* 中央配置用 */
-            margin-right: auto;  /* 中央配置用 */
+            width: auto;
+            margin-left: auto;
+            margin-right: auto;
         }
         .store-table td:nth-child(2) {
-            text-align: right;   /* 通常価格の列を右揃え */
-            padding-right: 20px; /* 右側に少し余白を持たせる */
+            text-align: right;
+            padding-right: 20px;
         }
 
         a.back-link {
-            color: #e3c887;
+            color: var(--accent-gold);
             text-decoration: none;
-            font-size: 16px;
-            display: inline-block;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
             margin-bottom: 20px;
-            transition: color 0.2s ease;
+            transition: color 0.2s ease, transform 0.2s ease;
         }
         a.back-link:hover {
-            color: #ffffff;
-            text-decoration: underline;
+            color: var(--accent-gold-hover);
+            transform: translateX(-4px);
         }
     </style>
 </head>
 <body>
-    <a href="poe2index.html" class="back-link">← Indexに戻る</a>
+    <a href="poe2index.html" class="back-link">
+        <svg style="width:16px;height:16px;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        Indexに戻る
+    </a>
     
     <div class="container">
         <h1>PoE2 メモ</h1>
@@ -168,7 +196,7 @@
             { "name": "プレミアムスタッシュ ×６", "normal": 200, "sale": "", "exiles_stash_bundle": "" },
             { "name": "プレミアムクアッド", "normal": 150, "sale": "", "exiles_stash_bundle": "〇" },
             { "name": "クアッドタブスタッシュ ×４", "normal": 500, "sale": "", "exiles_stash_bundle": "" },
-            { "name": "", "normal": "", "sale": "", "exiles_stash_bundle": "" }, // 何も入っていない行
+            { "name": "", "normal": "", "sale": "", "exiles_stash_bundle": "" },
             { "name": "カレンシー", "normal": 75, "sale": "", "exiles_stash_bundle": "〇" },
             { "name": "オーグメント", "normal": 50, "sale": "", "exiles_stash_bundle": "〇" },
             { "name": "ジェム", "normal": 40, "sale": "", "exiles_stash_bundle": "〇" },
@@ -176,7 +204,7 @@
             { "name": "エッセンス", "normal": 40, "sale": "", "exiles_stash_bundle": "〇" },
             { "name": "フラスコ", "normal": 40, "sale": "", "exiles_stash_bundle": "〇" },
             { "name": "ユニークコレクション", "normal": 140, "sale": "", "exiles_stash_bundle": "〇" },
-            { "name": "", "normal": "", "sale": "", "exiles_stash_bundle": "" }, // 何も入っていない行
+            { "name": "", "normal": "", "sale": "", "exiles_stash_bundle": "" },
             { "name": "マップ", "normal": 150, "sale": "", "exiles_stash_bundle": "" },
             { "name": "ブリーチ", "normal": 40, "sale": "", "exiles_stash_bundle": "〇" },
             { "name": "エクスペディション", "normal": 40, "sale": "", "exiles_stash_bundle": "〇" },
@@ -185,7 +213,7 @@
             { "name": "アビス", "normal": 40, "sale": "", "exiles_stash_bundle": "" },
             { "name": "マーチャントタブ", "normal": 40, "sale": "", "exiles_stash_bundle": "〇" },
             { "name": "マーチャントタブ ×６", "normal": 200, "sale": "", "exiles_stash_bundle": "" },
-            { "name": "", "normal": "", "sale": "", "exiles_stash_bundle": "" }, // 何も入っていない行
+            { "name": "", "normal": "", "sale": "", "exiles_stash_bundle": "" },
             { "name": "エグザイルのスタッシュバンドル（計810）", "normal": 605, "sale": "", "exiles_stash_bundle": "" },
             { "name": "エグザイルの盗みの指輪（拾ったカレンシー数）", "normal": 120, "sale": "", "exiles_stash_bundle": "" },
             { "name": "銅の時の守り人（マップ時間）", "normal": "270", "sale": "", "exiles_stash_bundle": "" }

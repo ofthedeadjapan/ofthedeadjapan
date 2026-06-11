@@ -5,10 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PoE2 Index</title>
     <style>
+        /* =========================================
+           CSS変数（poe2mapboss準拠）
+        ========================================= */
+        :root {
+            --bg-body: #0f172a;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --accent-gold: #d4af37;
+            --accent-gold-hover: #fef08a;
+        }
+
         body {
-            background-color: #1a1a1a;
-            color: #e0e0e0;
-            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: system-ui, -apple-system, sans-serif;
             margin: 0;
             padding: 40px 20px;
             line-height: 1.6;
@@ -19,10 +31,13 @@
         }
         h1 {
             color: #ffffff;
-            font-size: 24px;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
             margin-bottom: 30px;
-            border-bottom: 1px solid #444;
+            border-bottom: 1px solid var(--border-color);
             padding-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
         ul {
             list-style-type: none;
@@ -32,21 +47,29 @@
             margin-bottom: 15px;
         }
         a {
-            color: #e3c887; /* PoE風のゴールド色 */
+            color: var(--accent-gold);
             text-decoration: none;
             font-size: 18px;
-            display: inline-block;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
             padding: 5px 0;
-            transition: color 0.2s ease;
+            transition: color 0.2s ease, transform 0.2s ease;
         }
         a:hover {
-            color: #ffffff;
-            text-decoration: underline;
+            color: var(--accent-gold-hover);
+            text-decoration: none;
+            transform: translateX(4px);
         }
         a::before {
-            content: "▶ ";
+            content: "▶";
             font-size: 14px;
-            color: #888;
+            color: var(--text-muted);
+            margin-right: 8px;
+            transition: color 0.2s ease;
+        }
+        a:hover::before {
+            color: var(--accent-gold-hover);
         }
     </style>
 </head>
