@@ -29,7 +29,7 @@
 
             /* アクセントカラーの設定 */
             --accent-gold: #cba65f;         /* リンクや強調表示に使うゴールド */
-            --btn-on: #10b981;              /* フィルターやチェックがONの時のグリーン */
+            --btn-on: #10b981;              /* フィルターやチェックがONの時のグリーン（一部使用） */
             --btn-sort-active: #60a5fa;     /* アクティブなソート項目のブルー */
             
             /* 装飾サイズの設定 */
@@ -231,9 +231,35 @@
         
         /* 未選択時のホバーエフェクト（浮き上がる） */
         .icon-wrapper:not(.active):hover { transform: translateY(-2px); }
-        /* 選択時の強調エフェクト（緑の枠線と光） */
-        .icon-wrapper.active .icon-filter { border: 2px solid var(--btn-on); box-shadow: 0 0 8px rgba(16, 185, 129, 0.6); }
         
+        /* =========================================
+           耐性の種類（Weak / Strong / 通常）ごとのテーマカラー定義
+           （属性名が何であれ、末尾の文字列で判定します）
+        ========================================= */
+        /* 弱点 (末尾がWeak) - 赤系 */
+        .icon-wrapper[data-resist$="Weak"] { --status-color: 239, 68, 68; }
+        /* 耐性強 (末尾がStrong) - 黄系 */
+        .icon-wrapper[data-resist$="Strong"] { --status-color: 234, 179, 8; }
+        /* 通常 (WeakでもStrongでもない) - 白系 */
+        .icon-wrapper[data-resist]:not([data-resist$="Weak"]):not([data-resist$="Strong"]) { --status-color: 248, 250, 252; }
+
+        /* 未選択状態（指定色でうっすらと囲う） */
+        .icon-wrapper[data-resist] .icon-filter {
+            border: 2px solid rgba(var(--status-color), 0.4);
+            background-color: rgba(var(--status-color), 0.1);
+        }
+        /* ホバー状態（少し色を濃くして反応を示す） */
+        .icon-wrapper[data-resist]:hover .icon-filter {
+            border-color: rgba(var(--status-color), 0.8);
+            background-color: rgba(var(--status-color), 0.2);
+        }
+        /* 選択（アクティブ）状態（指定色で強く発光） */
+        .icon-wrapper.active[data-resist] .icon-filter {
+            border-color: rgb(var(--status-color));
+            box-shadow: 0 0 10px rgba(var(--status-color), 0.6);
+            background-color: rgba(var(--status-color), 0.3);
+        }
+
         /* いずれかのフィルターがONの時、OFFのアイコンを少し暗くする */
         .resist-filter-grid.has-active .icon-wrapper:not(.active) { opacity: 0.35; filter: grayscale(50%); }
         .resist-filter-grid.has-active .icon-wrapper:not(.active):hover { opacity: 0.8; }
@@ -247,6 +273,11 @@
         }
         /* ラッパーがアクティブな時のみバッジを表示 */
         .icon-wrapper.active .badge-check { opacity: 1; transform: scale(1); }
+        /* チェックマークの色も属性に連動させる */
+        .icon-wrapper.active[data-resist] .badge-check {
+            background-color: var(--btn-on);
+            border-color: var(--bg-panel);
+        }
 
         /* 該当耐性が存在しない箇所のダミーアイコン */
         .icon-dummy {
@@ -290,10 +321,38 @@
         /* 耐性アイコンを表示する列の幅固定とレイアウト */
         .col-耐性アイコン { width: 216px; min-width: 216px; max-width: 216px; text-align: center; white-space: normal; }
         .icon-img, .icon-text { display: inline-block; width: 30px; height: 30px; margin: 2px; vertical-align: middle; border-radius: 50%; }
-        .icon-img { object-fit: contain; box-shadow: 0 1px 2px rgba(0,0,0,0.3); }
         .icon-text { line-height: 30px; text-align: center; color: var(--text-muted); font-weight: bold; font-size: 16px; }
         /* アイコンを1行に並べるためのコンテナ */
         .resist-row-inline { display: inline-flex; justify-content: center; align-items: center; flex-wrap: nowrap; width: 100%; gap: 2px; margin-bottom: 2px; }
+
+        /* =========================================
+           テーブル内の耐性アイコンの色分けとホバー効果
+        ========================================= */
+        /* 弱点 (末尾がWeak) - 赤系 */
+        .icon-img[title$="Weak"] { --table-status-color: 239, 68, 68; }
+        /* 耐性強 (末尾がStrong) - 黄系 */
+        .icon-img[title$="Strong"] { --table-status-color: 234, 179, 8; }
+        /* 通常 (WeakでもStrongでもない) - 白系 */
+        .icon-img[title]:not([title$="Weak"]):not([title$="Strong"]) { --table-status-color: 248, 250, 252; }
+
+        /* テーブル内アイコンのデザイン適用（画像サイズ100%維持版） */
+        .icon-img {
+            object-fit: contain;
+            padding: 0; 
+            background-color: rgba(var(--table-status-color), 0.15);
+            /* borderを使わずbox-shadowで枠線を描き、元の影も残す */
+            box-shadow: 0 0 0 2px rgba(var(--table-status-color), 0.5), 
+                        0 1px 2px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease; 
+        }
+
+        /* 個別のアイコンに直接マウスを乗せた時だけ発光＋少し浮き上がる */
+        .icon-img:hover {
+            box-shadow: 0 0 0 2px rgb(var(--table-status-color)), 
+                        0 0 8px rgba(var(--table-status-color), 0.6);
+            background-color: rgba(var(--table-status-color), 0.3);
+            transform: translateY(-1px);
+        }
 
         /* 列や行を非表示にするための汎用クラス */
         .is-hidden { display: none !important; }
