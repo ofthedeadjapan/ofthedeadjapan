@@ -234,7 +234,6 @@
         tr:hover { background-color: var(--bg-tr-hover); }
         tr:hover td:first-child { box-shadow: inset 4px 0 0 var(--accent-gold); }
 
-        /* メッセージ行用: ホバーエフェクトの無効化 */
         #no-result-row:hover { background-color: transparent; }
         #no-result-row:hover td:first-child { box-shadow: none; }
 
@@ -271,7 +270,7 @@
             font-weight: 700;
             font-size: 18px;
             color: var(--text-muted);
-            white-space: normal; /* pre-wrapを上書きし、インデントのスペースを描画させない */
+            white-space: normal;
         }
         .msg-error { color: #f87171; }
 
@@ -614,9 +613,9 @@
             noResultRow.className = 'is-hidden';
             noResultRow.innerHTML = `
                 <td colspan="${TOTAL_COLUMNS}" class="msg-container">
-                    該当するデータが見つかりませんでした。<br>
-                    <button class="btn-action" onclick="clearAllFilters()" style="margin-top:16px; display:inline-flex;">
-                        ✖ 検索・フィルターを解除する
+                    <span id="no-result-msg-text">該当するデータが見つかりませんでした。</span><br>
+                    <button class="btn-action" onclick="resetView()" style="margin-top:16px; display:inline-flex;">
+                        ↺ ソート・表示項目の初期化
                     </button>
                 </td>
             `;
@@ -631,11 +630,17 @@
         function filterTable() {
             const filterText = normalizeText(document.getElementById('searchInput').value);
             const tbody = document.getElementById('boss-table-body');
-            let visibleCount = 0; 
+            let visibleCount = 0;
+            const hasVisibleColumn = Object.values(columnState).some(v => v);
             
             Array.from(tbody.children).forEach(row => {
                 if (row.id === 'no-result-row') return;
                 if (!row.dataset.search) return; 
+                
+                if (!hasVisibleColumn) {
+                    row.classList.add('is-hidden');
+                    return;
+                }
                 
                 const matchText = row.dataset.search.includes(filterText);
                 let matchResist = true;
@@ -657,7 +662,16 @@
 
             const noResultRow = document.getElementById('no-result-row');
             if (noResultRow) {
-                noResultRow.classList.toggle('is-hidden', visibleCount > 0);
+                const msgTextEl = document.getElementById('no-result-msg-text');
+                if (!hasVisibleColumn) {
+                    noResultRow.classList.remove('is-hidden');
+                    if (msgTextEl) msgTextEl.textContent = '選択項目がありません';
+                } else if (visibleCount === 0) {
+                    noResultRow.classList.remove('is-hidden');
+                    if (msgTextEl) msgTextEl.textContent = '該当するデータが見つかりませんでした。';
+                } else {
+                    noResultRow.classList.add('is-hidden');
+                }
             }
 
             document.getElementById('search-counter').textContent = `抽出結果: ${visibleCount}件 / 全${currentData.length}件`;
@@ -701,6 +715,7 @@
                 });
                 
                 updateButtonUI();
+                filterTable();
             }
         }
         
@@ -713,6 +728,7 @@
                 });
             });
             updateButtonUI();
+            filterTable();
         }
         
         function resetView() {
