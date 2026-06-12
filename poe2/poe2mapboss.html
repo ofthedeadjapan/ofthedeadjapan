@@ -61,15 +61,22 @@
         .reference-link-top a:hover { text-decoration: underline; }
 
         .controls-wrapper {
-            display: flex; align-items: center; flex-wrap: wrap;
+            display: flex; flex-direction: column; gap: 16px;
             width: 95%; margin: 0 auto 20px auto;
             background-color: var(--bg-panel);
-            padding: 12px 16px;
+            padding: 16px;
             border-radius: var(--radius-md);
             border: 1px solid var(--border-color);
             box-shadow: var(--shadow-md);
             box-sizing: border-box;
-            gap: 16px;
+        }
+
+        .controls-row {
+            display: flex; align-items: center; flex-wrap: wrap; gap: 16px; width: 100%;
+        }
+
+        .separator-horizontal {
+            width: 100%; height: 1px; background-color: rgba(87, 83, 78, 0.4);
         }
 
         .separator-strong { width: 2px; height: 32px; background-color: var(--separator-color); flex-shrink: 0; border-radius: 1px; }
@@ -209,8 +216,13 @@
         }
 
         .table-wrapper {
-            width: 95%; margin: 0 auto; border-radius: var(--radius-md); background-color: var(--bg-table);
-            box-shadow: var(--shadow-md); border: 1px solid var(--border-color);
+            width: 95%;
+            margin: 0 auto;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            background-color: var(--bg-table);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
         }
 
         table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 14px; }
@@ -224,15 +236,12 @@
             background-color: var(--bg-th); color: #ffffff; white-space: nowrap; text-align: center; font-weight: 600;
             box-shadow: 0 1px 0 var(--border-color);
         }
-        th:first-child { border-top-left-radius: var(--radius-md); }
-        th:last-child { border-top-right-radius: var(--radius-md); }
 
         td { text-align: left; }
         tr { transition: background-color 0.2s ease; }
         tr td:first-child { transition: box-shadow 0.2s ease; }
         tr.row-even { background-color: var(--bg-tr-even); }
         
-        /* 修正箇所: .no-hover-row にはホバーエフェクトを適用しない */
         tr:not(.no-hover-row):hover { background-color: var(--bg-tr-hover); }
         tr:not(.no-hover-row):hover td:first-child { box-shadow: inset 4px 0 0 var(--accent-gold); }
 
@@ -274,8 +283,8 @@
         .msg-error { color: #f87171; }
 
         @media (max-width: 900px) {
-            .controls-wrapper { gap: 12px; }
-            .separator-strong, .separator-weak { display: none; }
+            .controls-row { gap: 12px; }
+            .separator-strong, .separator-weak, .separator-horizontal { display: none; }
             .search-wrapper { max-width: 100%; width: 100%; }
             .search-counter { width: 100%; text-align: left; }
             .btn-dropdown, .btn-action { flex: 1; width: 100%; }
@@ -298,96 +307,100 @@
     </div>
 
     <div class="controls-wrapper">
-        <button class="btn-action" onclick="resetView()">↺ ソート・表示項目の初期化</button>
-        
-        <div class="separator-strong"></div>
-        
-        <div class="dropdown" id="sort-dropdown">
-            <button class="btn-dropdown">
-                <span class="btn-left-icon">↕</span>
-                <span id="btn-sort-text" class="btn-label">
-                    マップ名ソート: 初期順
-                </span>
-                <span class="dropdown-icon">▼</span>
-            </button>
-            <div class="dropdown-content">
-                <div class="dropdown-item sort-active" id="sort-default" onclick="sortTable('default', '初期順')"><span class="checkmark">✔</span>初期順</div>
-                <div class="dropdown-item" id="sort-kana-asc" onclick="sortTable('kana-asc', '五十音順')"><span class="checkmark">✔</span>五十音順</div>
-                <div class="dropdown-item" id="sort-kana-desc" onclick="sortTable('kana-desc', '五十音逆順')"><span class="checkmark">✔</span>五十音逆順</div>
-                <div class="dropdown-item" id="sort-eng-asc" onclick="sortTable('eng-asc', '英語順')"><span class="checkmark">✔</span>英語順</div>
-                <div class="dropdown-item" id="sort-eng-desc" onclick="sortTable('eng-desc', '英語逆順')"><span class="checkmark">✔</span>英語逆順</div>
+        <div class="controls-row">
+            <button class="btn-action" onclick="resetView()">↺ ソート・表示項目の初期化</button>
+            
+            <div class="separator-strong"></div>
+            
+            <div class="dropdown" id="sort-dropdown">
+                <button class="btn-dropdown">
+                    <span class="btn-left-icon">↕</span>
+                    <span id="btn-sort-text" class="btn-label">
+                        マップ名ソート: 初期順
+                    </span>
+                    <span class="dropdown-icon">▼</span>
+                </button>
+                <div class="dropdown-content">
+                    <div class="dropdown-item sort-active" id="sort-default" onclick="sortTable('default', '初期順')"><span class="checkmark">✔</span>初期順</div>
+                    <div class="dropdown-item" id="sort-kana-asc" onclick="sortTable('kana-asc', '五十音順')"><span class="checkmark">✔</span>五十音順</div>
+                    <div class="dropdown-item" id="sort-kana-desc" onclick="sortTable('kana-desc', '五十音逆順')"><span class="checkmark">✔</span>五十音逆順</div>
+                    <div class="dropdown-item" id="sort-eng-asc" onclick="sortTable('eng-asc', '英語順')"><span class="checkmark">✔</span>英語順</div>
+                    <div class="dropdown-item" id="sort-eng-desc" onclick="sortTable('eng-desc', '英語逆順')"><span class="checkmark">✔</span>英語逆順</div>
+                </div>
+            </div>
+            
+            <div class="separator-weak"></div>
+            
+            <div class="dropdown" id="column-dropdown">
+                <button class="btn-dropdown">
+                    <span class="btn-left-icon">⊞</span>
+                    <span id="btn-column-text" class="btn-label">
+                        表示項目: 10/12
+                    </span>
+                    <span class="dropdown-icon">▼</span>
+                </button>
+                <div class="dropdown-content">
+                    <div class="dropdown-item action-item" onclick="setAllColumns(true)">☑ すべて表示</div>
+                    <div class="dropdown-item action-item" onclick="setAllColumns(false)">☐ すべて非表示</div>
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-item" id="item-検索用よみがな" onclick="toggleColumn('検索用よみがな')"><span class="checkmark">✔</span>検索用よみがな</div>
+                    <div class="dropdown-item" id="item-検索用ローマ字" onclick="toggleColumn('検索用ローマ字')"><span class="checkmark">✔</span>検索用ローマ字</div>
+                    <div class="dropdown-item" id="item-マップ日本語" onclick="toggleColumn('マップ日本語')"><span class="checkmark">✔</span>マップ日本語</div>
+                    <div class="dropdown-item" id="item-ボス日本語" onclick="toggleColumn('ボス日本語')"><span class="checkmark">✔</span>ボス日本語</div>
+                    <div class="dropdown-item" id="item-マップ英語" onclick="toggleColumn('マップ英語')"><span class="checkmark">✔</span>マップ英語</div>
+                    <div class="dropdown-item" id="item-ボス英語" onclick="toggleColumn('ボス英語')"><span class="checkmark">✔</span>ボス英語</div>
+                    <div class="dropdown-item" id="item-耐性アイコン" onclick="toggleColumn('耐性アイコン')"><span class="checkmark">✔</span>耐性アイコン</div>
+                    <div class="dropdown-item" id="item-元ボスアクト" onclick="toggleColumn('元ボスアクト')"><span class="checkmark">✔</span>元ボスアクト</div>
+                    <div class="dropdown-item" id="item-元ボスエリア" onclick="toggleColumn('元ボスエリア')"><span class="checkmark">✔</span>元ボスエリア</div>
+                    <div class="dropdown-item" id="item-元ボス名" onclick="toggleColumn('元ボス名')"><span class="checkmark">✔</span>元ボス名</div>
+                    <div class="dropdown-item" id="item-元ボス特徴" onclick="toggleColumn('元ボス特徴')"><span class="checkmark">✔</span>元ボス特徴</div>
+                    <div class="dropdown-item" id="item-メモ" onclick="toggleColumn('メモ')"><span class="checkmark">✔</span>メモ</div>
+                </div>
             </div>
         </div>
-        
-        <div class="separator-weak"></div>
-        
-        <div class="dropdown" id="column-dropdown">
-            <button class="btn-dropdown">
-                <span class="btn-left-icon">⊞</span>
-                <span id="btn-column-text" class="btn-label">
-                    表示項目: 10/12
-                </span>
-                <span class="dropdown-icon">▼</span>
-            </button>
-            <div class="dropdown-content">
-                <div class="dropdown-item action-item" onclick="setAllColumns(true)">☑ すべて表示</div>
-                <div class="dropdown-item action-item" onclick="setAllColumns(false)">☐ すべて非表示</div>
-                <div class="dropdown-divider"></div>
-                <div class="dropdown-item" id="item-検索用よみがな" onclick="toggleColumn('検索用よみがな')"><span class="checkmark">✔</span>検索用よみがな</div>
-                <div class="dropdown-item" id="item-検索用ローマ字" onclick="toggleColumn('検索用ローマ字')"><span class="checkmark">✔</span>検索用ローマ字</div>
-                <div class="dropdown-item" id="item-マップ日本語" onclick="toggleColumn('マップ日本語')"><span class="checkmark">✔</span>マップ日本語</div>
-                <div class="dropdown-item" id="item-ボス日本語" onclick="toggleColumn('ボス日本語')"><span class="checkmark">✔</span>ボス日本語</div>
-                <div class="dropdown-item" id="item-マップ英語" onclick="toggleColumn('マップ英語')"><span class="checkmark">✔</span>マップ英語</div>
-                <div class="dropdown-item" id="item-ボス英語" onclick="toggleColumn('ボス英語')"><span class="checkmark">✔</span>ボス英語</div>
-                <div class="dropdown-item" id="item-耐性アイコン" onclick="toggleColumn('耐性アイコン')"><span class="checkmark">✔</span>耐性アイコン</div>
-                <div class="dropdown-item" id="item-元ボスアクト" onclick="toggleColumn('元ボスアクト')"><span class="checkmark">✔</span>元ボスアクト</div>
-                <div class="dropdown-item" id="item-元ボスエリア" onclick="toggleColumn('元ボスエリア')"><span class="checkmark">✔</span>元ボスエリア</div>
-                <div class="dropdown-item" id="item-元ボス名" onclick="toggleColumn('元ボス名')"><span class="checkmark">✔</span>元ボス名</div>
-                <div class="dropdown-item" id="item-元ボス特徴" onclick="toggleColumn('元ボス特徴')"><span class="checkmark">✔</span>元ボス特徴</div>
-                <div class="dropdown-item" id="item-メモ" onclick="toggleColumn('メモ')"><span class="checkmark">✔</span>メモ</div>
+
+        <div class="separator-horizontal"></div>
+
+        <div class="controls-row">
+            <button class="btn-action" onclick="clearAllFilters()">✖ 検索・フィルターの全解除</button>
+            
+            <div class="separator-strong"></div>
+            
+            <div class="search-wrapper">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" oninput="filterTable()" placeholder="マップ名やボス名で検索..." autocomplete="off">
+                <button class="clear-text-btn" onclick="clearSearchText()" title="文字を消去">✖</button>
             </div>
-        </div>
-    </div>
 
-    <div class="controls-wrapper">
-        <button class="btn-action" onclick="clearAllFilters()">✖ 検索・フィルターの全解除</button>
-        
-        <div class="separator-strong"></div>
-        
-        <div class="search-wrapper">
-            <span class="search-icon">🔍</span>
-            <input type="text" id="searchInput" oninput="filterTable()" placeholder="マップ名やボス名で検索..." autocomplete="off">
-            <button class="clear-text-btn" onclick="clearSearchText()" title="文字を消去">✖</button>
-        </div>
+            <div class="separator-weak"></div>
 
-        <div class="separator-weak"></div>
+            <div class="resist-filter-grid" id="resist-grid">
+                <div class="icon-dummy" title="ArmourWeak">-</div>
+                <div class="icon-dummy" title="EvasionWeak">-</div>
+                <div class="icon-wrapper" data-resist="FireWeak" title="FireWeak"><img src="IconEnemyResistanceFireWeak.png" class="icon-filter"><div class="badge-check">✔</div></div>
+                <div class="icon-wrapper" data-resist="ColdWeak" title="ColdWeak"><img src="IconEnemyResistanceColdWeak.png" class="icon-filter"><div class="badge-check">✔</div></div>
+                <div class="icon-wrapper" data-resist="LightningWeak" title="LightningWeak"><img src="IconEnemyResistanceLightningWeak.png" class="icon-filter"><div class="badge-check">✔</div></div>
+                <div class="icon-dummy" title="ChaosWeak">-</div>
+                
+                <div class="icon-wrapper" data-resist="Armour" title="Armour"><img src="IconEnemyArmour.png" class="icon-filter"><div class="badge-check">✔</div></div>
+                <div class="icon-wrapper" data-resist="Evasion" title="Evasion"><img src="IconEnemyEvasion.png" class="icon-filter"><div class="badge-check">✔</div></div>
+                <div class="icon-wrapper" data-resist="Fire" title="Fire"><img src="IconEnemyResistanceFire.png" class="icon-filter"><div class="badge-check">✔</div></div>
+                <div class="icon-wrapper" data-resist="Cold" title="Cold"><img src="IconEnemyResistanceCold.png" class="icon-filter"><div class="badge-check">✔</div></div>
+                <div class="icon-wrapper" data-resist="Lightning" title="Lightning"><img src="IconEnemyResistanceLightning.png" class="icon-filter"><div class="badge-check">✔</div></div>
+                <div class="icon-wrapper" data-resist="Chaos" title="Chaos"><img src="MonsterResistanceIconChaos.png" class="icon-filter"><div class="badge-check">✔</div></div>
+                
+                <div class="icon-wrapper" data-resist="ArmourStrong" title="ArmourStrong"><img src="IconEnemyArmourStrong.png" class="icon-filter"><div class="badge-check">✔</div></div>
+                <div class="icon-wrapper" data-resist="EvasionStrong" title="EvasionStrong"><img src="IconEnemyEvasionStrong.png" class="icon-filter"><div class="badge-check">✔</div></div>
+                <div class="icon-wrapper" data-resist="FireStrong" title="FireStrong"><img src="IconEnemyResistanceFireStrong.png" class="icon-filter"><div class="badge-check">✔</div></div>
+                <div class="icon-wrapper" data-resist="ColdStrong" title="ColdStrong"><img src="IconEnemyResistanceColdStrong.png" class="icon-filter"><div class="badge-check">✔</div></div>
+                <div class="icon-wrapper" data-resist="LightningStrong" title="LightningStrong"><img src="IconEnemyResistanceLightningStrong.png" class="icon-filter"><div class="badge-check">✔</div></div>
+                <div class="icon-wrapper" data-resist="ChaosStrong" title="ChaosStrong"><img src="IconEnemyResistanceChaosStrong.png" class="icon-filter"><div class="badge-check">✔</div></div>
+            </div>
 
-        <div class="resist-filter-grid" id="resist-grid">
-            <div class="icon-dummy" title="ArmourWeak">-</div>
-            <div class="icon-dummy" title="EvasionWeak">-</div>
-            <div class="icon-wrapper" data-resist="FireWeak" title="FireWeak"><img src="IconEnemyResistanceFireWeak.png" class="icon-filter"><div class="badge-check">✔</div></div>
-            <div class="icon-wrapper" data-resist="ColdWeak" title="ColdWeak"><img src="IconEnemyResistanceColdWeak.png" class="icon-filter"><div class="badge-check">✔</div></div>
-            <div class="icon-wrapper" data-resist="LightningWeak" title="LightningWeak"><img src="IconEnemyResistanceLightningWeak.png" class="icon-filter"><div class="badge-check">✔</div></div>
-            <div class="icon-dummy" title="ChaosWeak">-</div>
+            <div class="separator-weak"></div>
             
-            <div class="icon-wrapper" data-resist="Armour" title="Armour"><img src="IconEnemyArmour.png" class="icon-filter"><div class="badge-check">✔</div></div>
-            <div class="icon-wrapper" data-resist="Evasion" title="Evasion"><img src="IconEnemyEvasion.png" class="icon-filter"><div class="badge-check">✔</div></div>
-            <div class="icon-wrapper" data-resist="Fire" title="Fire"><img src="IconEnemyResistanceFire.png" class="icon-filter"><div class="badge-check">✔</div></div>
-            <div class="icon-wrapper" data-resist="Cold" title="Cold"><img src="IconEnemyResistanceCold.png" class="icon-filter"><div class="badge-check">✔</div></div>
-            <div class="icon-wrapper" data-resist="Lightning" title="Lightning"><img src="IconEnemyResistanceLightning.png" class="icon-filter"><div class="badge-check">✔</div></div>
-            <div class="icon-wrapper" data-resist="Chaos" title="Chaos"><img src="MonsterResistanceIconChaos.png" class="icon-filter"><div class="badge-check">✔</div></div>
-            
-            <div class="icon-wrapper" data-resist="ArmourStrong" title="ArmourStrong"><img src="IconEnemyArmourStrong.png" class="icon-filter"><div class="badge-check">✔</div></div>
-            <div class="icon-wrapper" data-resist="EvasionStrong" title="EvasionStrong"><img src="IconEnemyEvasionStrong.png" class="icon-filter"><div class="badge-check">✔</div></div>
-            <div class="icon-wrapper" data-resist="FireStrong" title="FireStrong"><img src="IconEnemyResistanceFireStrong.png" class="icon-filter"><div class="badge-check">✔</div></div>
-            <div class="icon-wrapper" data-resist="ColdStrong" title="ColdStrong"><img src="IconEnemyResistanceColdStrong.png" class="icon-filter"><div class="badge-check">✔</div></div>
-            <div class="icon-wrapper" data-resist="LightningStrong" title="LightningStrong"><img src="IconEnemyResistanceLightningStrong.png" class="icon-filter"><div class="badge-check">✔</div></div>
-            <div class="icon-wrapper" data-resist="ChaosStrong" title="ChaosStrong"><img src="IconEnemyResistanceChaosStrong.png" class="icon-filter"><div class="badge-check">✔</div></div>
+            <div id="search-counter" class="search-counter">検索結果: -件 / 全-件</div>
         </div>
-
-        <div class="separator-weak"></div>
-        
-        <div id="search-counter" class="search-counter">抽出結果: -件 / 全-件</div>
     </div>
 
     <div class="table-wrapper">
@@ -460,7 +473,6 @@
         const TOTAL_COLUMNS = Object.keys(columnState).length;
 
         document.addEventListener('DOMContentLoaded', () => {
-            
             document.querySelectorAll('.icon-wrapper[data-resist]').forEach(wrapper => {
                 wrapper.addEventListener('click', function() {
                     this.classList.toggle('active');
@@ -505,7 +517,6 @@
                     buildTable(currentData);
                 })
                 .catch(() => {
-                    // 修正箇所: エラー行に class="no-hover-row" を付与
                     document.getElementById('boss-table-body').innerHTML = `<tr class="no-hover-row"><td colspan="${TOTAL_COLUMNS}" class="msg-container msg-error">ファイル取得失敗: JSONデータを読み込めませんでした。</td></tr>`;
                     document.getElementById('search-counter').textContent = "読込エラー";
                 });
@@ -597,9 +608,8 @@
             for (const [key, visible] of Object.entries(columnState)) if (!visible) hiddenColumns.add(key);
 
             if (data.length === 0) {
-                // 修正箇所: データが空の行に class="no-hover-row" を付与
                 tbody.innerHTML = `<tr class="no-hover-row"><td colspan="${TOTAL_COLUMNS}" class="msg-container">データが空です。</td></tr>`;
-                document.getElementById('search-counter').textContent = "抽出結果: 0件 / 全0件";
+                document.getElementById('search-counter').textContent = "検索結果: 0件 / 全0件";
                 return;
             }
 
@@ -609,18 +619,9 @@
                 tbody.appendChild(tr);
             });
 
-            // 修正箇所: no-hover-row クラスを付与し、ボタンのonclickとテキストを修正
             const noResultRow = document.createElement('tr');
             noResultRow.id = 'no-result-row';
             noResultRow.className = 'is-hidden no-hover-row';
-            noResultRow.innerHTML = `
-                <td colspan="${TOTAL_COLUMNS}" class="msg-container">
-                    <span id="no-result-msg-text">該当するデータが見つかりませんでした。</span><br>
-                    <button class="btn-action" onclick="clearAllFilters()" style="margin-top:16px; display:inline-flex;">
-                        ✖ 検索・フィルターの全解除
-                    </button>
-                </td>
-            `;
             tbody.appendChild(noResultRow);
 
             document.querySelectorAll('th[data-key]').forEach(th => th.classList.toggle('is-hidden', hiddenColumns.has(th.dataset.key)));
@@ -664,19 +665,33 @@
 
             const noResultRow = document.getElementById('no-result-row');
             if (noResultRow) {
-                const msgTextEl = document.getElementById('no-result-msg-text');
                 if (!hasVisibleColumn) {
                     noResultRow.classList.remove('is-hidden');
-                    if (msgTextEl) msgTextEl.textContent = '選択項目がありません';
+                    noResultRow.innerHTML = `
+                        <td colspan="${TOTAL_COLUMNS}" class="msg-container">
+                            <span>選択項目がありません</span><br>
+                            <button class="btn-action" onclick="resetView()" style="margin-top:16px; display:inline-flex;">
+                                ↺ ソート・表示項目の初期化
+                            </button>
+                        </td>
+                    `;
                 } else if (visibleCount === 0) {
                     noResultRow.classList.remove('is-hidden');
-                    if (msgTextEl) msgTextEl.textContent = '該当するデータが見つかりませんでした。';
+                    noResultRow.innerHTML = `
+                        <td colspan="${TOTAL_COLUMNS}" class="msg-container">
+                            <span>該当するデータが見つかりませんでした。</span><br>
+                            <button class="btn-action" onclick="clearAllFilters()" style="margin-top:16px; display:inline-flex;">
+                                ✖ 検索・フィルターの全解除
+                            </button>
+                        </td>
+                    `;
                 } else {
                     noResultRow.classList.add('is-hidden');
+                    noResultRow.innerHTML = '';
                 }
             }
 
-            document.getElementById('search-counter').textContent = `抽出結果: ${visibleCount}件 / 全${currentData.length}件`;
+            document.getElementById('search-counter').textContent = `検索結果: ${visibleCount}件 / 全${currentData.length}件`;
         }
 
         function sortTable(mode, textName) {
