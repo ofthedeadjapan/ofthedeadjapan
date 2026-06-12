@@ -234,6 +234,10 @@
         tr:hover { background-color: var(--bg-tr-hover); }
         tr:hover td:first-child { box-shadow: inset 4px 0 0 var(--accent-gold); }
 
+        /* メッセージ行用: ホバーエフェクトの無効化 */
+        #no-result-row:hover { background-color: transparent; }
+        #no-result-row:hover td:first-child { box-shadow: none; }
+
         .col-耐性アイコン { width: 216px; min-width: 216px; max-width: 216px; text-align: center; white-space: normal; }
         .icon-img, .icon-text { display: inline-block; width: 30px; height: 30px; margin: 2px; vertical-align: middle; border-radius: 50%; }
         .icon-text { line-height: 30px; text-align: center; color: var(--text-muted); font-weight: bold; font-size: 16px; }
@@ -267,6 +271,7 @@
             font-weight: 700;
             font-size: 18px;
             color: var(--text-muted);
+            white-space: normal; /* pre-wrapを上書きし、インデントのスペースを描画させない */
         }
         .msg-error { color: #f87171; }
 
@@ -609,12 +614,10 @@
             noResultRow.className = 'is-hidden';
             noResultRow.innerHTML = `
                 <td colspan="${TOTAL_COLUMNS}" class="msg-container">
-                    <div style="padding: 20px;">
-                        該当するデータが見つかりませんでした。<br>
-                        <button class="btn-action" onclick="clearAllFilters()" style="margin-top:10px; display:inline-flex;">
-                            ✖ 検索・フィルターを解除する
-                        </button>
-                    </div>
+                    該当するデータが見つかりませんでした。<br>
+                    <button class="btn-action" onclick="clearAllFilters()" style="margin-top:16px; display:inline-flex;">
+                        ✖ 検索・フィルターを解除する
+                    </button>
                 </td>
             `;
             tbody.appendChild(noResultRow);
