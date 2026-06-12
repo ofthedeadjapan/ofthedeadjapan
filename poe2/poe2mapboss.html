@@ -4,52 +4,31 @@
     <meta charset="UTF-8">
     <title>PoE2 ver0.5 マップボスリスト</title>
     <style>
-        /* =========================================
-           CSS変数定義
-           全体の色調（ダークテーマ / アイケアパレット）や
-           共通で使用する影、角丸のサイズを一元管理する
-        ========================================= */
         :root {
-            /* 背景色の設定 */
-            --bg-body: #1c1917;             /* ページ全体の背景色 */
-            --bg-panel: #292524;            /* コントロールパネルやドロップダウンの背景色 */
-            --bg-table: #292524;            /* テーブル全体の背景色 */
-            --bg-th: #44403c;               /* テーブルヘッダーの背景色 */
-            --bg-tr-even: #23201e;          /* テーブルの偶数行の背景色（ゼブラ模様用） */
-            --bg-tr-hover: rgba(203, 166, 95, 0.15); /* 行ホバー時のハイライト色 */
-            
-            /* 文字・ボーダー色の設定 */
-            --text-main: #e7e5e4;           /* メインの文字色 */
-            --text-muted: #a8a29e;          /* 控えめな文字色（補足情報など） */
-            --border-color: #57534e;        /* 各種境界線の色 */
-            
-            /* 追加用途別カラー */
+            --bg-body: #1c1917;
+            --bg-panel: #292524;
+            --bg-table: #292524;
+            --bg-th: #44403c;
+            --bg-tr-even: #23201e;
+            --bg-tr-hover: rgba(203, 166, 95, 0.15);
+            --text-main: #e7e5e4;
+            --text-muted: #a8a29e;
+            --border-color: #57534e;
             --separator-color: #78716c;
             --scrollbar-color: var(--border-color);
-
-            /* アクセントカラーの設定 */
-            --accent-gold: #cba65f;         /* リンクや強調表示に使うゴールド */
-            --btn-on: #10b981;              /* フィルターやチェックがONの時のグリーン（一部使用） */
-            --btn-sort-active: #60a5fa;     /* アクティブなソート項目のブルー */
-            
-            /* 装飾サイズの設定 */
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5); /* パネル等のドロップシャドウ */
-            --radius-md: 12px;              /* 大きめの角丸 */
-            --radius-sm: 8px;               /* 小さめの角丸 */
+            --accent-gold: #cba65f;
+            --btn-on: #10b981;
+            --btn-sort-active: #60a5fa;
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+            --radius-md: 12px;
+            --radius-sm: 8px;
         }
 
-        /* =========================================
-           カスタムスクロールバーのスタイル
-           Webkit系ブラウザ（Chrome, Safari等）向けのデザイン
-        ========================================= */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: var(--bg-body); }
         ::-webkit-scrollbar-thumb { background: var(--scrollbar-color); border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-        /* =========================================
-           ページ全体の基本スタイル
-        ========================================= */
         body {
             background-color: var(--bg-body);
             color: var(--text-main);
@@ -59,9 +38,6 @@
             line-height: 1.5;
         }
 
-        /* =========================================
-           Indexへ戻るリンクのスタイル
-        ========================================= */
         a.back-link {
             color: var(--accent-gold);
             text-decoration: none;
@@ -73,12 +49,8 @@
             margin-left: 2.5%;
             transition: color 0.2s ease, transform 0.2s ease;
         }
-        /* ホバー時に少し左へ動かし、色を明るくするアニメーション */
         a.back-link:hover { color: #fef08a; transform: translateX(-4px); }
 
-        /* =========================================
-           ヘッダーエリア（タイトルと参考リンク）
-        ========================================= */
         .header-container {
             display: flex; justify-content: space-between; align-items: flex-end;
             width: 95%; margin: 0 auto 20px auto; padding-bottom: 8px;
@@ -88,9 +60,6 @@
         .reference-link-top a { color: #60a5fa; text-decoration: none; }
         .reference-link-top a:hover { text-decoration: underline; }
 
-        /* =========================================
-           コントロールパネル（検索・フィルター等のコンテナ）
-        ========================================= */
         .controls-wrapper {
             display: flex; align-items: center; flex-wrap: wrap;
             width: 95%; margin: 0 auto 20px auto;
@@ -103,18 +72,15 @@
             gap: 16px;
         }
 
-        /* パネル内の区切り線（太・細） */
         .separator-strong { width: 2px; height: 32px; background-color: var(--separator-color); flex-shrink: 0; border-radius: 1px; }
         .separator-weak { width: 1px; height: 26px; background-color: rgba(87, 83, 78, 0.6); flex-shrink: 0; }
 
-        /* 基本のボタンスタイル */
         button {
             cursor: pointer; border: 1px solid transparent; border-radius: var(--radius-sm);
             font-size: 15px; font-weight: 600; transition: all 0.2s ease; outline: none;
         }
-        button:active { transform: translateY(1px); } /* クリック時の押し込みエフェクト */
+        button:active { transform: translateY(1px); }
 
-        /* 各種アクションを実行するボタン（初期化やクリアなど） */
         .btn-action {
             padding: 10px 16px; white-space: nowrap; flex-shrink: 0;
             display: flex; align-items: center; gap: 6px;
@@ -122,14 +88,12 @@
             border: 1px solid rgba(210, 150, 70, 0.40);
             color: #e8c88a;
         }
-        /* ホバー時は光るようなエフェクトを追加 */
         .btn-action:hover {
             background-color: rgba(180, 120, 40, 0.3);
             color: #fff;
             box-shadow: 0 0 10px rgba(210, 150, 70, 0.3);
         }
 
-        /* ドロップダウンを開くためのボタン */
        .btn-dropdown {
             display: grid;
             grid-template-columns: 24px 1fr 24px;
@@ -148,12 +112,8 @@
         .btn-dropdown:hover { background-color: var(--border-color); color: #fff; }
         .dropdown-icon { text-align: center; font-size: 12px; pointer-events: none; }
 
-        /* ドロップダウンメニューの構造と動き */
         .dropdown { position: relative; display: inline-block; }
-        /* ホバー判定の隙間を埋めるための疑似要素 */
-        .dropdown::after { content: ""; position: absolute; top: 100%; left: 0; width: 100%; height: 6px; }
         
-        /* ドロップダウンの中身（初期状態は非表示） */
         .dropdown-content {
             display: none; position: absolute; top: calc(100% + 6px); left: 0;
             background-color: var(--bg-panel); border: 1px solid var(--border-color);
@@ -161,52 +121,36 @@
             z-index: 100; padding: 8px; min-width: 260px;
         }
 
-        /* PC環境用：マウスホバーでドロップダウンを開く */
-        @media (hover: hover) {
-            #sort-dropdown:hover .dropdown-content { display: block; }
-            #column-dropdown:hover .dropdown-content { display: block; }
-        }
-        /* スマホ環境用：JSで付与した .show クラスでドロップダウンを開く */
         #sort-dropdown.show .dropdown-content { display: block; }
         #column-dropdown.show .dropdown-content { display: block; }
 
-        /* ドロップダウン内の各選択肢アイテム */
         .dropdown-item {
             padding: 10px 16px; font-size: 15px; color: var(--text-main); cursor: pointer;
             display: flex; align-items: center; gap: 12px; border-radius: var(--radius-sm);
             user-select: none; transition: background-color 0.15s;
         }
         .dropdown-item:hover { background-color: var(--bg-th); color: #ffffff; }
-        /* 選択状態を示すチェックマーク（デフォルトは非表示） */
         .dropdown-item .checkmark { width: 18px; font-weight: bold; color: var(--btn-on); visibility: hidden; }
-        /* 現在アクティブなソート項目の強調 */
         .dropdown-item.sort-active { color: var(--btn-sort-active); font-weight: 700; }
         .dropdown-item.sort-active .checkmark { visibility: visible; }
         
         .dropdown-divider { height: 1px; background-color: var(--border-color); margin: 6px 0; }
-        /* 「すべて表示」などのアクション項目の色 */
         .action-item { color: var(--accent-gold); font-weight: 600; }
 
-        /* =========================================
-           テキスト検索バー
-        ========================================= */
         .search-wrapper {
             position: relative; display: flex; align-items: center; flex-grow: 1; min-width: 260px; max-width: 450px;
         }
         .search-icon {
             position: absolute; left: 14px; font-size: 16px; color: var(--text-muted); pointer-events: none;
         }
-        /* 検索入力欄 */
         #searchInput {
             width: 100%; height: 44px; padding: 10px 40px 10px 42px; font-size: 16px;
             border: 1px solid var(--border-color); background-color: rgba(0,0,0,0.2);
             color: white; border-radius: var(--radius-sm); box-sizing: border-box;
             transition: all 0.2s;
         }
-        /* 入力フォーカス時のハイライト */
         #searchInput:focus { outline: none; border-color: #ffffff; box-shadow: 0 0 10px 2px rgba(255,255,255,0.2); }
         
-        /* 検索テキストをクリアするボタン（文字が入力された時のみ表示） */
         .clear-text-btn {
             position: absolute; right: 10px; background: rgba(255,255,255,0.1); border: none;
             color: var(--text-main); width: 24px; height: 24px; border-radius: 50%;
@@ -214,81 +158,56 @@
             cursor: pointer; transition: 0.2s; visibility: hidden; opacity: 0;
         }
         .clear-text-btn:hover { background: rgba(255,255,255,0.3); color: #fff; }
-        /* placeholderが表示されていない（入力がある）場合にクリアボタンを表示 */
         #searchInput:not(:placeholder-shown) ~ .clear-text-btn { visibility: visible; opacity: 1; }
 
-        /* 検索結果の件数表示 */
         .search-counter { font-size: 15px; font-weight: bold; color: var(--accent-gold); white-space: nowrap; }
 
-        /* =========================================
-           耐性フィルターのアイコン一覧グリッド
-        ========================================= */
         .resist-filter-grid { display: grid; grid-template-columns: repeat(6, 36px); grid-template-rows: repeat(3, 36px); gap: 8px; }
         
-        /* クリック可能なアイコンのラッパー */
         .icon-wrapper { position: relative; width: 36px; height: 36px; cursor: pointer; border-radius: 50%; transition: 0.2s; }
         .icon-filter { width: 100%; height: 100%; border-radius: 50%; border: 2px solid transparent; background-color: var(--bg-th); object-fit: contain; box-sizing: border-box; transition: 0.2s; }
         
-        /* 未選択時のホバーエフェクト（浮き上がる） */
         .icon-wrapper:not(.active):hover { transform: translateY(-2px); }
         
-        /* =========================================
-           耐性の種類（Weak / Strong / 通常）ごとのテーマカラー定義
-           （属性名が何であれ、末尾の文字列で判定します）
-        ========================================= */
-        /* 弱点 (末尾がWeak) - 赤系 */
         .icon-wrapper[data-resist$="Weak"] { --status-color: 239, 68, 68; }
-        /* 耐性強 (末尾がStrong) - 黄系 */
         .icon-wrapper[data-resist$="Strong"] { --status-color: 234, 179, 8; }
-        /* 通常 (WeakでもStrongでもない) - 白系 */
-        .icon-wrapper[data-resist]:not([data-resist$="Weak"]):not([data-resist$="Strong"]) { --status-color: 248, 250, 252; }
+        .icon-wrapper[data-resist]:not([data-resist$="Weak"]):not([data-resist$="Strong"]) { --status-color: 208, 206, 205; }
 
-        /* 未選択状態（指定色でうっすらと囲う） */
         .icon-wrapper[data-resist] .icon-filter {
             border: 2px solid rgba(var(--status-color), 0.4);
             background-color: rgba(var(--status-color), 0.1);
         }
-        /* ホバー状態（少し色を濃くして反応を示す） */
         .icon-wrapper[data-resist]:hover .icon-filter {
             border-color: rgba(var(--status-color), 0.8);
             background-color: rgba(var(--status-color), 0.2);
         }
-        /* 選択（アクティブ）状態（指定色で強く発光） */
         .icon-wrapper.active[data-resist] .icon-filter {
             border-color: rgb(var(--status-color));
             box-shadow: 0 0 10px rgba(var(--status-color), 0.6);
             background-color: rgba(var(--status-color), 0.3);
         }
 
-        /* いずれかのフィルターがONの時、OFFのアイコンを少し暗くする */
         .resist-filter-grid.has-active .icon-wrapper:not(.active) { opacity: 0.35; filter: grayscale(50%); }
         .resist-filter-grid.has-active .icon-wrapper:not(.active):hover { opacity: 0.8; }
 
-        /* 選択時にアイコン右下に表示されるチェックマークバッジ */
         .badge-check {
             position: absolute; bottom: -4px; right: -4px; background-color: var(--btn-on); color: #fff;
             width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
             font-size: 10px; font-weight: bold; border: 2px solid var(--bg-panel);
             opacity: 0; transform: scale(0.5); transition: 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        /* ラッパーがアクティブな時のみバッジを表示 */
         .icon-wrapper.active .badge-check { opacity: 1; transform: scale(1); }
-        /* チェックマークの色も属性に連動させる */
         .icon-wrapper.active[data-resist] .badge-check {
             background-color: var(--btn-on);
             border-color: var(--bg-panel);
         }
 
-        /* 該当耐性が存在しない箇所のダミーアイコン */
         .icon-dummy {
             width: 100%; height: 100%; border-radius: 50%; background-color: rgba(0,0,0,0.2);
             display: flex; align-items: center; justify-content: center; color: var(--border-color);
             font-weight: bold; border: 1px solid rgba(255,255,255,0.05); pointer-events: none;
         }
 
-        /* =========================================
-           データテーブルのスタイル
-        ========================================= */
         .table-wrapper {
             width: 95%; margin: 0 auto; border-radius: var(--radius-md); background-color: var(--bg-table);
             box-shadow: var(--shadow-md); border: 1px solid var(--border-color);
@@ -300,7 +219,6 @@
         th:last-child, td:last-child { border-right: none; }
         tr:last-child td { border-bottom: none; }
 
-        /* 固定ヘッダーのスタイル */
         th {
             position: sticky; top: 0; z-index: 10;
             background-color: var(--bg-th); color: #ffffff; white-space: nowrap; text-align: center; font-weight: 600;
@@ -312,41 +230,28 @@
         td { text-align: left; }
         tr { transition: background-color 0.2s ease; }
         tr td:first-child { transition: box-shadow 0.2s ease; }
-        /* ゼブラ模様（JavaScriptで偶数行に付与） */
         tr.row-even { background-color: var(--bg-tr-even); }
-        /* 行ホバー時のハイライト設定 */
         tr:hover { background-color: var(--bg-tr-hover); }
         tr:hover td:first-child { box-shadow: inset 4px 0 0 var(--accent-gold); }
 
-        /* 耐性アイコンを表示する列の幅固定とレイアウト */
         .col-耐性アイコン { width: 216px; min-width: 216px; max-width: 216px; text-align: center; white-space: normal; }
         .icon-img, .icon-text { display: inline-block; width: 30px; height: 30px; margin: 2px; vertical-align: middle; border-radius: 50%; }
         .icon-text { line-height: 30px; text-align: center; color: var(--text-muted); font-weight: bold; font-size: 16px; }
-        /* アイコンを1行に並べるためのコンテナ */
         .resist-row-inline { display: inline-flex; justify-content: center; align-items: center; flex-wrap: nowrap; width: 100%; gap: 2px; margin-bottom: 2px; }
 
-        /* =========================================
-           テーブル内の耐性アイコンの色分けとホバー効果
-        ========================================= */
-        /* 弱点 (末尾がWeak) - 赤系 */
         .icon-img[title$="Weak"] { --table-status-color: 239, 68, 68; }
-        /* 耐性強 (末尾がStrong) - 黄系 */
         .icon-img[title$="Strong"] { --table-status-color: 234, 179, 8; }
-        /* 通常 (WeakでもStrongでもない) - 白系 */
-        .icon-img[title]:not([title$="Weak"]):not([title$="Strong"]) { --table-status-color: 248, 250, 252; }
+        .icon-img[title]:not([title$="Weak"]):not([title$="Strong"]) { --table-status-color: 208, 206, 205; }
 
-        /* テーブル内アイコンのデザイン適用（画像サイズ100%維持版） */
         .icon-img {
             object-fit: contain;
             padding: 0; 
             background-color: rgba(var(--table-status-color), 0.15);
-            /* borderを使わずbox-shadowで枠線を描き、元の影も残す */
             box-shadow: 0 0 0 2px rgba(var(--table-status-color), 0.5), 
                         0 1px 2px rgba(0, 0, 0, 0.3);
             transition: all 0.2s ease; 
         }
 
-        /* 個別のアイコンに直接マウスを乗せた時だけ発光＋少し浮き上がる */
         .icon-img:hover {
             box-shadow: 0 0 0 2px rgb(var(--table-status-color)), 
                         0 0 8px rgba(var(--table-status-color), 0.6);
@@ -354,12 +259,8 @@
             transform: translateY(-1px);
         }
 
-        /* 列や行を非表示にするための汎用クラス */
         .is-hidden { display: none !important; }
 
-        /* =========================================
-           エラー・メッセージ表示用スタイル
-        ========================================= */
         .msg-container {
             text-align: center;
             padding: 48px 20px;
@@ -369,16 +270,13 @@
         }
         .msg-error { color: #f87171; }
 
-        /* =========================================
-           レスポンシブデザイン（スマホ用表示）
-        ========================================= */
         @media (max-width: 900px) {
             .controls-wrapper { gap: 12px; }
-            .separator-strong, .separator-weak { display: none; } /* スマホでは区切り線を隠す */
-            .search-wrapper { max-width: 100%; width: 100%; }     /* 検索バーを画面幅いっぱいに */
+            .separator-strong, .separator-weak { display: none; }
+            .search-wrapper { max-width: 100%; width: 100%; }
             .search-counter { width: 100%; text-align: left; }
-            .btn-dropdown, .btn-action { flex: 1; width: 100%; }  /* ボタンを画面幅いっぱいに */
-            .table-wrapper { overflow-x: auto; }                  /* テーブルの横スクロールを許可 */
+            .btn-dropdown, .btn-action { flex: 1; width: 100%; }
+            .table-wrapper { overflow-x: auto; }
         }
     </style>
 </head>
@@ -513,10 +411,6 @@
     </div>
 
     <script>
-        // =========================================
-        // 各種耐性名に対応する画像ファイル名のマッピング定義
-        // normal(通常)、strong(耐性強)、weak(弱点)の3種類を管理
-        // =========================================
         const RESIST_DEFINITIONS = {
             Armour: { normal: 'IconEnemyArmour.png', strong: 'IconEnemyArmourStrong.png' },
             Evasion: { normal: 'IconEnemyEvasion.png', strong: 'IconEnemyEvasionStrong.png' },
@@ -526,7 +420,6 @@
             Chaos: { normal: 'MonsterResistanceIconChaos.png', strong: 'IconEnemyResistanceChaosStrong.png' }
         };
 
-        // 耐性文字列から対応する画像のパスを特定する関数
         function getIconPath(resistKey) {
             if (resistKey.endsWith('Strong')) return RESIST_DEFINITIONS[resistKey.replace('Strong', '')]?.strong;
             if (resistKey.endsWith('Weak')) return RESIST_DEFINITIONS[resistKey.replace('Weak', '')]?.weak;
@@ -556,20 +449,15 @@
             '元ボス名','元ボス特徴','メモ'
         ];
 
-        // 状態管理変数
         let currentData = [];
         let activeResists = new Set();
-        const rowMap = new Map(); // dataのdefaultOrderをキーとし、対応する<tr>要素を保持する
+        const rowMap = new Map();
 
         const columnState = structuredClone(COLUMN_CONFIG);
         const TOTAL_COLUMNS = Object.keys(columnState).length;
 
-        // =========================================
-        // ページ読み込み完了時の初期化処理
-        // =========================================
         document.addEventListener('DOMContentLoaded', () => {
             
-            // 1. 耐性フィルターアイコンのクリックイベントを設定
             document.querySelectorAll('.icon-wrapper[data-resist]').forEach(wrapper => {
                 wrapper.addEventListener('click', function() {
                     this.classList.toggle('active');
@@ -584,33 +472,29 @@
                 });
             });
 
-            // 2. スマホ（タッチデバイス）向けのドロップダウン開閉処理
-            const isTouchDevice = window.matchMedia('(hover: none)').matches;
-            if (isTouchDevice) {
-                document.querySelectorAll('.btn-dropdown').forEach(btn => {
-                    btn.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        const parent = this.parentElement;
-                        const isAlreadyOpen = parent.classList.contains('show');
-                        
-                        document.querySelectorAll('.dropdown').forEach(d => {
-                            if (d !== parent) d.classList.remove('show');
-                        });
-                        
-                        if (isAlreadyOpen) {
-                            parent.classList.remove('show');
-                        } else {
-                            parent.classList.add('show');
-                        }
+            document.querySelectorAll('.btn-dropdown').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    const parent = this.parentElement;
+                    const isAlreadyOpen = parent.classList.contains('show');
+                    
+                    document.querySelectorAll('.dropdown').forEach(d => {
+                        d.classList.remove('show');
                     });
+                    
+                    if (!isAlreadyOpen) {
+                        parent.classList.add('show');
+                    }
                 });
+            });
 
-                document.addEventListener('click', () => {
-                    document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('show'));
+            document.addEventListener('click', (e) => {
+                document.querySelectorAll('.dropdown').forEach(dropdown => {
+                    if (!dropdown.contains(e.target)) {
+                        dropdown.classList.remove('show');
+                    }
                 });
-            }
+            });
 
-            // 3. JSONファイルからのデータ非同期読み込み
             fetch('poe2mapboss.json')
                 .then(r => { if (!r.ok) throw new Error(); return r.json(); })
                 .then(data => {
@@ -624,10 +508,6 @@
                 
             updateButtonUI();
         });
-
-        // =========================================
-        // 各種ユーティリティ関数
-        // =========================================
 
         function clearSearchText() {
             document.getElementById('searchInput').value = '';
@@ -659,11 +539,6 @@
             document.getElementById('btn-column-text').innerText = `表示項目: ${visibleCount}/${TOTAL_COLUMNS}`;
         }
 
-        // =========================================
-        // テーブル構築とDOM制御（初期化・表示切替・ソート・フィルタ）
-        // =========================================
-
-        // 1件のデータから、テーブルの1行分（<tr>）のDOMを生成する関数（初回構築時のみ実行）
         function createRow(item, hiddenColumns) {
             const tr = document.createElement('tr');
             let allRowResists = [];
@@ -709,7 +584,6 @@
             return tr;
         }
 
-        // テーブル要素の初回DOM構築（データの読み込み時に1度だけ実行）
         function buildTable(data) {
             const tbody = document.getElementById('boss-table-body');
             tbody.innerHTML = ''; 
@@ -724,28 +598,40 @@
                 return;
             }
 
-            // 全データをDOMに変換し、同時にrowMapに参照を保存
             data.forEach(item => {
                 const tr = createRow(item, hiddenColumns);
                 rowMap.set(item.defaultOrder, tr);
                 tbody.appendChild(tr);
             });
 
-            // ヘッダー（<th>）の表示状態を初期化
+            const noResultRow = document.createElement('tr');
+            noResultRow.id = 'no-result-row';
+            noResultRow.className = 'is-hidden';
+            noResultRow.innerHTML = `
+                <td colspan="${TOTAL_COLUMNS}" class="msg-container">
+                    <div style="padding: 20px;">
+                        該当するデータが見つかりませんでした。<br>
+                        <button class="btn-action" onclick="clearAllFilters()" style="margin-top:10px; display:inline-flex;">
+                            ✖ 検索・フィルターを解除する
+                        </button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(noResultRow);
+
             document.querySelectorAll('th[data-key]').forEach(th => th.classList.toggle('is-hidden', hiddenColumns.has(th.dataset.key)));
 
             updateButtonUI();
             filterTable();
         }
 
-        // 検索やフィルタ条件に基づいて既存の行（<tr>）の表示/非表示を切り替える
         function filterTable() {
             const filterText = normalizeText(document.getElementById('searchInput').value);
+            const tbody = document.getElementById('boss-table-body');
             let visibleCount = 0; 
             
-            // ※ソートによる順序変更を正しくゼブラストライプに反映させるため、DOMツリーの順番（tbody.children）でループする
-            const tbody = document.getElementById('boss-table-body');
             Array.from(tbody.children).forEach(row => {
+                if (row.id === 'no-result-row') return;
                 if (!row.dataset.search) return; 
                 
                 const matchText = row.dataset.search.includes(filterText);
@@ -763,14 +649,17 @@
                 
                 const isVisible = matchText && matchResist;
                 row.classList.toggle('is-hidden', !isVisible);
-                
-                if (isVisible) row.classList.toggle('row-even', visibleCount++ % 2 === 1);
+                row.classList.toggle('row-even', isVisible && (visibleCount++ % 2 === 1));
             });
+
+            const noResultRow = document.getElementById('no-result-row');
+            if (noResultRow) {
+                noResultRow.classList.toggle('is-hidden', visibleCount > 0);
+            }
 
             document.getElementById('search-counter').textContent = `抽出結果: ${visibleCount}件 / 全${currentData.length}件`;
         }
 
-        // 指定の基準でデータを並び替え、既存のDOM要素を移動させる
         function sortTable(mode, textName) {
             document.querySelectorAll('#sort-dropdown .dropdown-item').forEach(item => item.classList.remove('sort-active'));
             document.getElementById(`sort-${mode}`)?.classList.add('sort-active');
@@ -785,27 +674,25 @@
                 'eng-desc': (a, b) => String(b["マップ英語"] || '').localeCompare(String(a["マップ英語"] || ''), 'en', { numeric: true }) || a.defaultOrder - b.defaultOrder
             };
             
-            // データを並び替え
             currentData.sort(sorters[mode]);
             
-            // 並び替えた順に、rowMapからDOMを取り出してappendChildする（DOMの再生成ではなく「移動」になる）
             const tbody = document.getElementById('boss-table-body');
             currentData.forEach(item => {
                 const tr = rowMap.get(item.defaultOrder);
                 if (tr) tbody.appendChild(tr);
             });
             
-            // 並び順が変わったのでゼブラ模様を再計算
+            const noResultRow = document.getElementById('no-result-row');
+            if (noResultRow) tbody.appendChild(noResultRow);
+
             filterTable();
         }
 
-        // 既存の要素（th, td）に対して、クラス（is-hidden）の付け外しのみを行う
         function toggleColumn(stateKey) {
             if (columnState[stateKey] !== undefined) {
                 columnState[stateKey] = !columnState[stateKey];
                 const isHidden = !columnState[stateKey];
                 
-                // col-○○ クラスを持つ要素（thとtdの両方）を一括で取得してトグル
                 document.querySelectorAll(`.col-${stateKey}`).forEach(el => {
                     el.classList.toggle('is-hidden', isHidden);
                 });
@@ -814,7 +701,6 @@
             }
         }
         
-        // 全ての列の表示状態を一括で変更する
         function setAllColumns(visible) {
             Object.keys(columnState).forEach(k => {
                 columnState[k] = visible;
@@ -826,9 +712,7 @@
             updateButtonUI();
         }
         
-        // UIの状態・列の表示・並び順をすべて初期値に戻す（DOM再生成は行わない）
         function resetView() {
-            // 1. ソートのリセット
             document.querySelectorAll('#sort-dropdown .dropdown-item').forEach(item => item.classList.remove('sort-active'));
             document.getElementById('sort-default')?.classList.add('sort-active');
             document.getElementById('btn-sort-text').innerText = 'マップ名ソート: 初期順';
@@ -840,7 +724,9 @@
                 if (tr) tbody.appendChild(tr);
             });
 
-            // 2. 表示列のリセット
+            const noResultRow = document.getElementById('no-result-row');
+            if (noResultRow) tbody.appendChild(noResultRow);
+
             Object.keys(columnState).forEach(k => {
                 columnState[k] = !['検索用よみがな', '検索用ローマ字'].includes(k);
                 const isHidden = !columnState[k];
@@ -850,8 +736,6 @@
             });
             
             updateButtonUI();
-            
-            // 3. 最後にゼブラ模様の再計算
             filterTable();
         }
     </script>
