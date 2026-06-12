@@ -231,11 +231,10 @@
         tr { transition: background-color 0.2s ease; }
         tr td:first-child { transition: box-shadow 0.2s ease; }
         tr.row-even { background-color: var(--bg-tr-even); }
-        tr:hover { background-color: var(--bg-tr-hover); }
-        tr:hover td:first-child { box-shadow: inset 4px 0 0 var(--accent-gold); }
-
-        #no-result-row:hover { background-color: transparent; }
-        #no-result-row:hover td:first-child { box-shadow: none; }
+        
+        /* 修正箇所: .no-hover-row にはホバーエフェクトを適用しない */
+        tr:not(.no-hover-row):hover { background-color: var(--bg-tr-hover); }
+        tr:not(.no-hover-row):hover td:first-child { box-shadow: inset 4px 0 0 var(--accent-gold); }
 
         .col-耐性アイコン { width: 216px; min-width: 216px; max-width: 216px; text-align: center; white-space: normal; }
         .icon-img, .icon-text { display: inline-block; width: 30px; height: 30px; margin: 2px; vertical-align: middle; border-radius: 50%; }
@@ -506,7 +505,8 @@
                     buildTable(currentData);
                 })
                 .catch(() => {
-                    document.getElementById('boss-table-body').innerHTML = `<tr><td colspan="${TOTAL_COLUMNS}" class="msg-container msg-error">ファイル取得失敗: JSONデータを読み込めませんでした。</td></tr>`;
+                    // 修正箇所: エラー行に class="no-hover-row" を付与
+                    document.getElementById('boss-table-body').innerHTML = `<tr class="no-hover-row"><td colspan="${TOTAL_COLUMNS}" class="msg-container msg-error">ファイル取得失敗: JSONデータを読み込めませんでした。</td></tr>`;
                     document.getElementById('search-counter').textContent = "読込エラー";
                 });
                 
@@ -597,7 +597,8 @@
             for (const [key, visible] of Object.entries(columnState)) if (!visible) hiddenColumns.add(key);
 
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="${TOTAL_COLUMNS}" class="msg-container">データが空です。</td></tr>`;
+                // 修正箇所: データが空の行に class="no-hover-row" を付与
+                tbody.innerHTML = `<tr class="no-hover-row"><td colspan="${TOTAL_COLUMNS}" class="msg-container">データが空です。</td></tr>`;
                 document.getElementById('search-counter').textContent = "抽出結果: 0件 / 全0件";
                 return;
             }
@@ -608,14 +609,15 @@
                 tbody.appendChild(tr);
             });
 
+            // 修正箇所: no-hover-row クラスを付与し、ボタンのonclickとテキストを修正
             const noResultRow = document.createElement('tr');
             noResultRow.id = 'no-result-row';
-            noResultRow.className = 'is-hidden';
+            noResultRow.className = 'is-hidden no-hover-row';
             noResultRow.innerHTML = `
                 <td colspan="${TOTAL_COLUMNS}" class="msg-container">
                     <span id="no-result-msg-text">該当するデータが見つかりませんでした。</span><br>
-                    <button class="btn-action" onclick="resetView()" style="margin-top:16px; display:inline-flex;">
-                        ↺ ソート・表示項目の初期化
+                    <button class="btn-action" onclick="clearAllFilters()" style="margin-top:16px; display:inline-flex;">
+                        ✖ 検索・フィルターの全解除
                     </button>
                 </td>
             `;
