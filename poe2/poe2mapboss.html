@@ -128,8 +128,7 @@
             z-index: 100; padding: 8px; min-width: 260px;
         }
 
-        #sort-dropdown.show .dropdown-content { display: block; }
-        #column-dropdown.show .dropdown-content { display: block; }
+        .dropdown.show .dropdown-content { display: block; }
 
         .dropdown-item {
             padding: 10px 16px; font-size: 15px; color: var(--text-main); cursor: pointer;
@@ -300,7 +299,12 @@
     </a>
 
     <div class="header-container">
-        <h1>PoE2 ver0.5 マップボスリスト</h1>
+        <div>
+            <h1>PoE2 ver0.5 マップボスリスト</h1>
+            <div id="fallback-message" class="is-hidden" style="color: #f87171; font-size: 14px; margin-top: 8px;">
+                ※JSONファイルが読み込めなかったため、テスト用のダミーデータを表示しています。
+            </div>
+        </div>
         <div class="reference-link-top">
             参考データ: <a href="https://poe2db.tw/jp/Waystones#EndGameMaps" target="_blank" rel="noopener noreferrer">PoE2DB (Waystones)</a>
         </div>
@@ -308,11 +312,11 @@
 
     <div class="controls-wrapper">
         <div class="controls-row">
-            <button class="btn-action" onclick="resetView()">↺ ソート・表示項目の初期化</button>
+            <button class="btn-action" data-action="resetView">↺ ソート・表示項目の初期化</button>
             
             <div class="separator-strong"></div>
             
-            <div class="dropdown" id="sort-dropdown">
+            <div class="dropdown">
                 <button class="btn-dropdown">
                     <span class="btn-left-icon">↕</span>
                     <span id="btn-sort-text" class="btn-label">
@@ -321,17 +325,17 @@
                     <span class="dropdown-icon">▼</span>
                 </button>
                 <div class="dropdown-content">
-                    <div class="dropdown-item sort-active" id="sort-default" onclick="sortTable('default', '初期順')"><span class="checkmark">✔</span>初期順</div>
-                    <div class="dropdown-item" id="sort-kana-asc" onclick="sortTable('kana-asc', '五十音順')"><span class="checkmark">✔</span>五十音順</div>
-                    <div class="dropdown-item" id="sort-kana-desc" onclick="sortTable('kana-desc', '五十音逆順')"><span class="checkmark">✔</span>五十音逆順</div>
-                    <div class="dropdown-item" id="sort-eng-asc" onclick="sortTable('eng-asc', '英語順')"><span class="checkmark">✔</span>英語順</div>
-                    <div class="dropdown-item" id="sort-eng-desc" onclick="sortTable('eng-desc', '英語逆順')"><span class="checkmark">✔</span>英語逆順</div>
+                    <div class="dropdown-item sort-active" data-sort="default" data-sort-name="初期順"><span class="checkmark">✔</span>初期順</div>
+                    <div class="dropdown-item" data-sort="kana-asc" data-sort-name="五十音順"><span class="checkmark">✔</span>五十音順</div>
+                    <div class="dropdown-item" data-sort="kana-desc" data-sort-name="五十音逆順"><span class="checkmark">✔</span>五十音逆順</div>
+                    <div class="dropdown-item" data-sort="eng-asc" data-sort-name="英語順"><span class="checkmark">✔</span>英語順</div>
+                    <div class="dropdown-item" data-sort="eng-desc" data-sort-name="英語逆順"><span class="checkmark">✔</span>英語逆順</div>
                 </div>
             </div>
             
             <div class="separator-weak"></div>
             
-            <div class="dropdown" id="column-dropdown">
+            <div class="dropdown">
                 <button class="btn-dropdown">
                     <span class="btn-left-icon">⊞</span>
                     <span id="btn-column-text" class="btn-label">
@@ -340,21 +344,21 @@
                     <span class="dropdown-icon">▼</span>
                 </button>
                 <div class="dropdown-content">
-                    <div class="dropdown-item action-item" onclick="setAllColumns(true)">☑ すべて表示</div>
-                    <div class="dropdown-item action-item" onclick="setAllColumns(false)">☐ すべて非表示</div>
+                    <div class="dropdown-item action-item" data-column-action="showAll">☑ すべて表示</div>
+                    <div class="dropdown-item action-item" data-column-action="hideAll">☐ すべて非表示</div>
                     <div class="dropdown-divider"></div>
-                    <div class="dropdown-item" id="item-検索用よみがな" onclick="toggleColumn('検索用よみがな')"><span class="checkmark">✔</span>検索用よみがな</div>
-                    <div class="dropdown-item" id="item-検索用ローマ字" onclick="toggleColumn('検索用ローマ字')"><span class="checkmark">✔</span>検索用ローマ字</div>
-                    <div class="dropdown-item" id="item-マップ日本語" onclick="toggleColumn('マップ日本語')"><span class="checkmark">✔</span>マップ日本語</div>
-                    <div class="dropdown-item" id="item-ボス日本語" onclick="toggleColumn('ボス日本語')"><span class="checkmark">✔</span>ボス日本語</div>
-                    <div class="dropdown-item" id="item-マップ英語" onclick="toggleColumn('マップ英語')"><span class="checkmark">✔</span>マップ英語</div>
-                    <div class="dropdown-item" id="item-ボス英語" onclick="toggleColumn('ボス英語')"><span class="checkmark">✔</span>ボス英語</div>
-                    <div class="dropdown-item" id="item-耐性アイコン" onclick="toggleColumn('耐性アイコン')"><span class="checkmark">✔</span>耐性アイコン</div>
-                    <div class="dropdown-item" id="item-元ボスアクト" onclick="toggleColumn('元ボスアクト')"><span class="checkmark">✔</span>元ボスアクト</div>
-                    <div class="dropdown-item" id="item-元ボスエリア" onclick="toggleColumn('元ボスエリア')"><span class="checkmark">✔</span>元ボスエリア</div>
-                    <div class="dropdown-item" id="item-元ボス名" onclick="toggleColumn('元ボス名')"><span class="checkmark">✔</span>元ボス名</div>
-                    <div class="dropdown-item" id="item-元ボス特徴" onclick="toggleColumn('元ボス特徴')"><span class="checkmark">✔</span>元ボス特徴</div>
-                    <div class="dropdown-item" id="item-メモ" onclick="toggleColumn('メモ')"><span class="checkmark">✔</span>メモ</div>
+                    <div class="dropdown-item" data-column="検索用よみがな"><span class="checkmark">✔</span>検索用よみがな</div>
+                    <div class="dropdown-item" data-column="検索用ローマ字"><span class="checkmark">✔</span>検索用ローマ字</div>
+                    <div class="dropdown-item" data-column="マップ日本語"><span class="checkmark">✔</span>マップ日本語</div>
+                    <div class="dropdown-item" data-column="ボス日本語"><span class="checkmark">✔</span>ボス日本語</div>
+                    <div class="dropdown-item" data-column="マップ英語"><span class="checkmark">✔</span>マップ英語</div>
+                    <div class="dropdown-item" data-column="ボス英語"><span class="checkmark">✔</span>ボス英語</div>
+                    <div class="dropdown-item" data-column="耐性アイコン"><span class="checkmark">✔</span>耐性アイコン</div>
+                    <div class="dropdown-item" data-column="元ボスアクト"><span class="checkmark">✔</span>元ボスアクト</div>
+                    <div class="dropdown-item" data-column="元ボスエリア"><span class="checkmark">✔</span>元ボスエリア</div>
+                    <div class="dropdown-item" data-column="元ボス名"><span class="checkmark">✔</span>元ボス名</div>
+                    <div class="dropdown-item" data-column="元ボス特徴"><span class="checkmark">✔</span>元ボス特徴</div>
+                    <div class="dropdown-item" data-column="メモ"><span class="checkmark">✔</span>メモ</div>
                 </div>
             </div>
         </div>
@@ -362,14 +366,14 @@
         <div class="separator-horizontal"></div>
 
         <div class="controls-row">
-            <button class="btn-action" onclick="clearAllFilters()">✖ 検索・フィルターの全解除</button>
+            <button class="btn-action" data-action="clearAllFilters">✖ 検索・フィルターの全解除</button>
             
             <div class="separator-strong"></div>
             
             <div class="search-wrapper">
                 <span class="search-icon">🔍</span>
-                <input type="text" id="searchInput" oninput="filterTable()" placeholder="マップ名やボス名で検索..." autocomplete="off">
-                <button class="clear-text-btn" onclick="clearSearchText()" title="文字を消去">✖</button>
+                <input type="text" id="searchInput" placeholder="マップ名やボス名で検索..." autocomplete="off">
+                <button class="clear-text-btn" data-action="clearSearchText" title="文字を消去">✖</button>
             </div>
 
             <div class="separator-weak"></div>
@@ -427,6 +431,9 @@
     </div>
 
     <script>
+        // ==========================================
+        // 1. 定数と状態管理 (AppState)
+        // ==========================================
         const RESIST_DEFINITIONS = {
             Armour: { normal: 'IconEnemyArmour.png', strong: 'IconEnemyArmourStrong.png' },
             Evasion: { normal: 'IconEnemyEvasion.png', strong: 'IconEnemyEvasionStrong.png' },
@@ -435,12 +442,6 @@
             Lightning: { normal: 'IconEnemyResistanceLightning.png', strong: 'IconEnemyResistanceLightningStrong.png', weak: 'IconEnemyResistanceLightningWeak.png' },
             Chaos: { normal: 'MonsterResistanceIconChaos.png', strong: 'IconEnemyResistanceChaosStrong.png' }
         };
-
-        function getIconPath(resistKey) {
-            if (resistKey.endsWith('Strong')) return RESIST_DEFINITIONS[resistKey.replace('Strong', '')]?.strong;
-            if (resistKey.endsWith('Weak')) return RESIST_DEFINITIONS[resistKey.replace('Weak', '')]?.weak;
-            return RESIST_DEFINITIONS[resistKey]?.normal;
-        }
 
         const COLUMN_CONFIG = {
             '検索用よみがな': false,
@@ -458,86 +459,177 @@
         };
 
         const REQUIRED_HEADERS = Object.keys(COLUMN_CONFIG);
+        const SEARCH_KEYS = ['検索用よみがな','検索用ローマ字','マップ日本語','ボス日本語','マップ英語','ボス英語','元ボスアクト','元ボスエリア','元ボス名','元ボス特徴','メモ'];
 
-        const SEARCH_KEYS = [
-            '検索用よみがな','検索用ローマ字','マップ日本語','ボス日本語',
-            'マップ英語','ボス英語','元ボスアクト','元ボスエリア',
-            '元ボス名','元ボス特徴','メモ'
-        ];
+        const AppState = {
+            currentData: [],
+            rowMap: new Map(),
+            rows: [],
+            columnState: structuredClone(COLUMN_CONFIG),
+            currentSort: 'default',
+            filterState: {
+                text: '',
+                resists: new Set()
+            }
+        };
 
-        let currentData = [];
-        let activeResists = new Set();
-        const rowMap = new Map();
+        const TOTAL_COLUMNS = Object.keys(AppState.columnState).length;
 
-        const columnState = structuredClone(COLUMN_CONFIG);
-        const TOTAL_COLUMNS = Object.keys(columnState).length;
+        // ==========================================
+        // 2. DOM要素のキャッシュ
+        // ==========================================
+        const DOM = {
+            searchInput: null,
+            searchCounter: null,
+            resistGrid: null,
+            btnSortText: null,
+            btnColumnText: null,
+            tbody: null,
+            fallbackMessage: null,
+            noResultRow: null
+        };
 
+        // ==========================================
+        // 3. 初期化とイベントのバインド
+        // ==========================================
         document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.icon-wrapper[data-resist]').forEach(wrapper => {
-                wrapper.addEventListener('click', function() {
-                    this.classList.toggle('active');
-                    const resist = this.dataset.resist;
+            // DOMキャッシュの構築
+            DOM.searchInput = document.getElementById('searchInput');
+            DOM.searchCounter = document.getElementById('search-counter');
+            DOM.resistGrid = document.getElementById('resist-grid');
+            DOM.btnSortText = document.getElementById('btn-sort-text');
+            DOM.btnColumnText = document.getElementById('btn-column-text');
+            DOM.tbody = document.getElementById('boss-table-body');
+            DOM.fallbackMessage = document.getElementById('fallback-message');
+
+            // 固定入力イベント
+            DOM.searchInput.addEventListener('input', (e) => {
+                AppState.filterState.text = normalizeText(e.target.value);
+                filterTable();
+            });
+
+            // イベント委譲 (Event Delegation) による統合イベント管理
+            document.addEventListener('click', (e) => {
+                // Dropdownを閉じる処理
+                document.querySelectorAll('.dropdown').forEach(dropdown => {
+                    if (!dropdown.contains(e.target)) dropdown.classList.remove('show');
+                });
+
+                // Dropdownの開閉
+                const dropdownBtn = e.target.closest('.btn-dropdown');
+                if (dropdownBtn) {
+                    const parent = dropdownBtn.parentElement;
+                    const isAlreadyOpen = parent.classList.contains('show');
+                    document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('show'));
+                    if (!isAlreadyOpen) parent.classList.add('show');
+                    e.stopPropagation();
+                    return;
+                }
+
+                // 汎用アクションボタン
+                const actionBtn = e.target.closest('[data-action]');
+                if (actionBtn) {
+                    const action = actionBtn.dataset.action;
+                    if (action === 'resetView') resetView();
+                    else if (action === 'clearAllFilters') clearAllFilters();
+                    else if (action === 'clearSearchText') clearSearchText();
+                    return;
+                }
+
+                // ソート切り替え
+                const sortItem = e.target.closest('[data-sort]');
+                if (sortItem) {
+                    sortTable(sortItem.dataset.sort, sortItem.dataset.sortName);
+                    return;
+                }
+
+                // カラムの全表示/全非表示
+                const colAction = e.target.closest('[data-column-action]');
+                if (colAction) {
+                    setAllColumns(colAction.dataset.columnAction === 'showAll');
+                    return;
+                }
+
+                // カラムの個別トグル
+                const colToggle = e.target.closest('[data-column]');
+                if (colToggle) {
+                    toggleColumn(colToggle.dataset.column);
+                    return;
+                }
+
+                // 耐性フィルターアイコン
+                const resistIcon = e.target.closest('.icon-wrapper[data-resist]');
+                if (resistIcon) {
+                    resistIcon.classList.toggle('active');
+                    const resist = resistIcon.dataset.resist;
                     
-                    this.classList.contains('active') ? activeResists.add(resist) : activeResists.delete(resist);
+                    if (resistIcon.classList.contains('active')) {
+                        AppState.filterState.resists.add(resist);
+                    } else {
+                        AppState.filterState.resists.delete(resist);
+                    }
                     
-                    const grid = document.getElementById('resist-grid');
-                    activeResists.size > 0 ? grid.classList.add('has-active') : grid.classList.remove('has-active');
+                    AppState.filterState.resists.size > 0 ? DOM.resistGrid.classList.add('has-active') : DOM.resistGrid.classList.remove('has-active');
                     
                     filterTable();
-                });
+                    return;
+                }
             });
 
-            document.querySelectorAll('.btn-dropdown').forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    const parent = this.parentElement;
-                    const isAlreadyOpen = parent.classList.contains('show');
-                    
-                    document.querySelectorAll('.dropdown').forEach(d => {
-                        d.classList.remove('show');
-                    });
-                    
-                    if (!isAlreadyOpen) {
-                        parent.classList.add('show');
-                    }
-                });
-            });
-
-            document.addEventListener('click', (e) => {
-                document.querySelectorAll('.dropdown').forEach(dropdown => {
-                    if (!dropdown.contains(e.target)) {
-                        dropdown.classList.remove('show');
-                    }
-                });
-            });
-
+            // データ取得とテーブル構築
             fetch('poe2mapboss.json')
                 .then(r => { if (!r.ok) throw new Error(); return r.json(); })
                 .then(data => {
-                    currentData = data.map((item, idx) => ({ ...item, defaultOrder: idx }));
-                    buildTable(currentData);
+                    initializeApp(data);
                 })
                 .catch(() => {
-                    document.getElementById('boss-table-body').innerHTML = `<tr class="no-hover-row"><td colspan="${TOTAL_COLUMNS}" class="msg-container msg-error">ファイル取得失敗: JSONデータを読み込めませんでした。</td></tr>`;
-                    document.getElementById('search-counter').textContent = "読込エラー";
+                    console.warn("JSONデータの読み込みに失敗しました。動作確認用のダミーデータを表示します。");
+                    DOM.fallbackMessage.classList.remove('is-hidden');
+                    const dummyData = [
+                        { "検索用よみがな": "あーすくいーくつー", "検索用ローマ字": "earthquaketwo", "マップ日本語": "地震の試練", "ボス日本語": "地割れ巨人", "マップ英語": "Earthquake Trial", "ボス英語": "Fissure Giant", "耐性アイコン": "FireWeak", "元ボスアクト": "Act1", "元ボスエリア": "断層", "元ボス名": "最初の巨人", "元ボス特徴": "物理攻撃", "メモ": "テストデータ1" },
+                        { "検索用よみがな": "こおりのどうくつ", "検索用ローマ字": "koorinodoukutsu", "マップ日本語": "氷の洞窟", "ボス日本語": "氷雪の魔術師", "マップ英語": "Ice Cave", "ボス英語": "Frost Mage", "耐性アイコン": "ColdStrong, Armour", "元ボスアクト": "Act2", "元ボスエリア": "雪山", "元ボス名": "雪男", "元ボス特徴": "凍結注意", "メモ": "テストデータ2" },
+                        { "検索用よみがな": "かみなりのしんでん", "検索用ローマ字": "kaminarinoshinden", "マップ日本語": "雷の神殿", "ボス日本語": "雷鳴の鳥", "マップ英語": "Lightning Temple", "ボス英語": "Thunder Bird", "耐性アイコン": "LightningWeak, ChaosStrong", "元ボスアクト": "Act3", "元ボスエリア": "空の神殿", "元ボス名": "サンダーバード", "元ボス特徴": "回避高い", "メモ": "テストデータ3" }
+                    ];
+                    initializeApp(dummyData);
                 });
-                
-            updateButtonUI();
         });
 
-        function clearSearchText() {
-            document.getElementById('searchInput').value = '';
+        // ==========================================
+        // 4. データ・UI操作関数
+        // ==========================================
+
+        function initializeApp(data) {
+            AppState.currentData = data.map((item, idx) => {
+                const resistIndex = new Set(
+                    String(item.耐性アイコン || '-')
+                        .replace(/\r\n/g, '\n')
+                        .split(/[\n,]+/)
+                        .map(r => r.trim())
+                        .filter(r => r && r !== '-')
+                );
+
+                const searchIndex = normalizeText(
+                    SEARCH_KEYS.map(k => item[k] || '').join(' ')
+                );
+
+                return {
+                    ...item,
+                    id: idx,
+                    defaultOrder: idx,
+                    searchIndex,
+                    resistIndex
+                };
+            });
+            
+            buildTable(AppState.currentData);
             filterTable();
-            document.getElementById('searchInput').focus();
+            updateButtonUI();
         }
 
-        function clearAllFilters() {
-            document.getElementById('searchInput').value = '';
-            activeResists.clear();
-            
-            document.querySelectorAll('.icon-wrapper').forEach(w => w.classList.remove('active'));
-            document.getElementById('resist-grid').classList.remove('has-active');
-            
-            filterTable();
+        function getIconPath(resistKey) {
+            if (resistKey.endsWith('Strong')) return RESIST_DEFINITIONS[resistKey.replace('Strong', '')]?.strong;
+            if (resistKey.endsWith('Weak')) return RESIST_DEFINITIONS[resistKey.replace('Weak', '')]?.weak;
+            return RESIST_DEFINITIONS[resistKey]?.normal;
         }
 
         function normalizeText(str) { 
@@ -546,17 +638,41 @@
 
         function updateButtonUI() {
             let visibleCount = 0;
-            for (const key of Object.keys(columnState)) {
-                const checkmark = document.getElementById(`item-${key}`)?.querySelector('.checkmark');
-                if (checkmark) checkmark.style.visibility = columnState[key] ? 'visible' : 'hidden';
-                if (columnState[key]) visibleCount++;
+            for (const key of Object.keys(AppState.columnState)) {
+                const colItem = document.querySelector(`[data-column="${key}"]`);
+                if (colItem) {
+                    const checkmark = colItem.querySelector('.checkmark');
+                    if (checkmark) checkmark.style.visibility = AppState.columnState[key] ? 'visible' : 'hidden';
+                }
+                if (AppState.columnState[key]) visibleCount++;
             }
-            document.getElementById('btn-column-text').innerText = `表示項目: ${visibleCount}/${TOTAL_COLUMNS}`;
+            DOM.btnColumnText.innerText = `表示項目: ${visibleCount}/${TOTAL_COLUMNS}`;
         }
+
+        function clearSearchText() {
+            DOM.searchInput.value = '';
+            AppState.filterState.text = '';
+            filterTable();
+            DOM.searchInput.focus();
+        }
+
+        function clearAllFilters() {
+            DOM.searchInput.value = '';
+            AppState.filterState.text = '';
+            AppState.filterState.resists.clear();
+            
+            document.querySelectorAll('.icon-wrapper').forEach(w => w.classList.remove('active'));
+            DOM.resistGrid.classList.remove('has-active');
+            
+            filterTable();
+        }
+
+        // ==========================================
+        // 5. テーブル構築
+        // ==========================================
 
         function createRow(item, hiddenColumns) {
             const tr = document.createElement('tr');
-            let allRowResists = [];
 
             REQUIRED_HEADERS.forEach(key => {
                 const td = document.createElement('td');
@@ -568,7 +684,6 @@
                     
                     bossResistances.forEach(resistStr => {
                         const keysInRow = resistStr.split(',').map(k => k.trim()).filter(k => k !== '');
-                        allRowResists.push(...keysInRow);
                         
                         const rowDiv = document.createElement('div');
                         rowDiv.className = 'resist-row-inline';
@@ -592,113 +707,146 @@
                 }
                 tr.appendChild(td);
             });
-
-            tr.dataset.resists = allRowResists.join(',');
-            tr.dataset.search = normalizeText(SEARCH_KEYS.map(k => item[k] || '').join(' '));
             
             return tr;
         }
 
         function buildTable(data) {
-            const tbody = document.getElementById('boss-table-body');
-            tbody.innerHTML = ''; 
-            rowMap.clear();
+            DOM.tbody.innerHTML = ''; 
+            AppState.rowMap.clear();
+            AppState.rows = []; 
             
             const hiddenColumns = new Set();
-            for (const [key, visible] of Object.entries(columnState)) if (!visible) hiddenColumns.add(key);
+            for (const [key, visible] of Object.entries(AppState.columnState)) if (!visible) hiddenColumns.add(key);
 
             if (data.length === 0) {
-                tbody.innerHTML = `<tr class="no-hover-row"><td colspan="${TOTAL_COLUMNS}" class="msg-container">データが空です。</td></tr>`;
-                document.getElementById('search-counter').textContent = "検索結果: 0件 / 全0件";
+                DOM.tbody.innerHTML = `<tr class="no-hover-row"><td colspan="${TOTAL_COLUMNS}" class="msg-container">データが空です。</td></tr>`;
+                DOM.searchCounter.textContent = "検索結果: 0件 / 全0件";
                 return;
             }
 
             data.forEach(item => {
                 const tr = createRow(item, hiddenColumns);
-                rowMap.set(item.defaultOrder, tr);
-                tbody.appendChild(tr);
+                AppState.rowMap.set(item.id, tr);
+                AppState.rows.push(tr); 
+                DOM.tbody.appendChild(tr);
             });
 
-            const noResultRow = document.createElement('tr');
-            noResultRow.id = 'no-result-row';
-            noResultRow.className = 'is-hidden no-hover-row';
-            tbody.appendChild(noResultRow);
+            DOM.noResultRow = document.createElement('tr');
+            DOM.noResultRow.className = 'is-hidden no-hover-row';
+            DOM.tbody.appendChild(DOM.noResultRow);
 
             document.querySelectorAll('th[data-key]').forEach(th => th.classList.toggle('is-hidden', hiddenColumns.has(th.dataset.key)));
-
-            updateButtonUI();
-            filterTable();
         }
 
-        function filterTable() {
-            const filterText = normalizeText(document.getElementById('searchInput').value);
-            const tbody = document.getElementById('boss-table-body');
-            let visibleCount = 0;
-            const hasVisibleColumn = Object.values(columnState).some(v => v);
-            
-            Array.from(tbody.children).forEach(row => {
-                if (row.id === 'no-result-row') return;
-                if (!row.dataset.search) return; 
-                
-                if (!hasVisibleColumn) {
-                    row.classList.add('is-hidden');
-                    return;
-                }
-                
-                const matchText = row.dataset.search.includes(filterText);
-                let matchResist = true;
-                
-                if (activeResists.size > 0) {
-                    const rowResists = row.dataset.resists ? row.dataset.resists.split(',') : [];
-                    for (let r of activeResists) { 
-                        if (!rowResists.includes(r)) { 
-                            matchResist = false; 
-                            break; 
-                        } 
-                    }
-                }
-                
-                const isVisible = matchText && matchResist;
-                row.classList.toggle('is-hidden', !isVisible);
-                row.classList.toggle('row-even', isVisible && (visibleCount++ % 2 === 1));
-            });
+        // ==========================================
+        // 6. フィルタリング と レンダリング
+        // ==========================================
 
-            const noResultRow = document.getElementById('no-result-row');
-            if (noResultRow) {
-                if (!hasVisibleColumn) {
-                    noResultRow.classList.remove('is-hidden');
-                    noResultRow.innerHTML = `
-                        <td colspan="${TOTAL_COLUMNS}" class="msg-container">
-                            <span>選択項目がありません</span><br>
-                            <button class="btn-action" onclick="resetView()" style="margin-top:16px; display:inline-flex;">
-                                ↺ ソート・表示項目の初期化
-                            </button>
-                        </td>
-                    `;
-                } else if (visibleCount === 0) {
-                    noResultRow.classList.remove('is-hidden');
-                    noResultRow.innerHTML = `
-                        <td colspan="${TOTAL_COLUMNS}" class="msg-container">
-                            <span>該当するデータが見つかりませんでした。</span><br>
-                            <button class="btn-action" onclick="clearAllFilters()" style="margin-top:16px; display:inline-flex;">
-                                ✖ 検索・フィルターの全解除
-                            </button>
-                        </td>
-                    `;
+        function filterTable() {
+            const hasVisibleColumn = Object.values(AppState.columnState).some(v => v);
+            const matchedRows = getFilteredRows(hasVisibleColumn);
+            
+            const viewState = {
+                matchedRows: matchedRows,
+                visibleCount: matchedRows.length,
+                hasVisibleColumn: hasVisibleColumn
+            };
+
+            renderView(viewState);
+        }
+
+        function getFilteredData() {
+            const activeResists = Array.from(AppState.filterState.resists);
+            const searchText = AppState.filterState.text;
+
+            return AppState.currentData.filter(item => {
+                if (searchText && !item.searchIndex.includes(searchText)) {
+                    return false;
+                }
+
+                return activeResists.every(r => item.resistIndex.has(r));
+            });
+        }
+
+        function getFilteredRows(hasVisibleColumn) {
+            if (!hasVisibleColumn) return [];
+            return getFilteredData().map(item => AppState.rowMap.get(item.id));
+        }
+
+        function renderView(viewState) {
+            renderRows(viewState);
+            renderCounter(viewState);
+            renderNoResult(viewState);
+        }
+
+        function renderRows(viewState) {
+            let visibleCount = 0;
+            const matchedSet = new Set(viewState.matchedRows);
+            
+            for (const row of AppState.rows) {
+                if (matchedSet.has(row) && viewState.hasVisibleColumn) {
+                    row.classList.remove('is-hidden');
+                    row.classList.toggle('row-even', visibleCount++ % 2 === 1);
                 } else {
-                    noResultRow.classList.add('is-hidden');
-                    noResultRow.innerHTML = '';
+                    row.classList.add('is-hidden');
+                    row.classList.remove('row-even');
                 }
             }
+        }
 
-            document.getElementById('search-counter').textContent = `検索結果: ${visibleCount}件 / 全${currentData.length}件`;
+        function renderCounter(viewState) {
+            DOM.searchCounter.textContent = `検索結果: ${viewState.visibleCount}件 / 全${AppState.currentData.length}件`;
+        }
+
+        function renderNoResult(viewState) {
+            if (!DOM.noResultRow) return;
+
+            if (!viewState.hasVisibleColumn) {
+                DOM.noResultRow.classList.remove('is-hidden');
+                DOM.noResultRow.innerHTML = `
+                    <td colspan="${TOTAL_COLUMNS}" class="msg-container">
+                        <span>選択項目がありません</span><br>
+                        <button class="btn-action" data-action="resetView" style="margin-top:16px; display:inline-flex;">
+                            ↺ ソート・表示項目の初期化
+                        </button>
+                    </td>
+                `;
+            } else if (viewState.visibleCount === 0) {
+                DOM.noResultRow.classList.remove('is-hidden');
+                DOM.noResultRow.innerHTML = `
+                    <td colspan="${TOTAL_COLUMNS}" class="msg-container">
+                        <span>該当するデータが見つかりませんでした。</span><br>
+                        <button class="btn-action" data-action="clearAllFilters" style="margin-top:16px; display:inline-flex;">
+                            ✖ 検索・フィルターの全解除
+                        </button>
+                    </td>
+                `;
+            } else {
+                DOM.noResultRow.classList.add('is-hidden');
+                DOM.noResultRow.innerHTML = '';
+            }
+        }
+
+        // ==========================================
+        // 7. ソートと表示項目切り替え
+        // ==========================================
+
+        function reorderRows() {
+            AppState.currentData.forEach(item => {
+                const tr = AppState.rowMap.get(item.id);
+                if (tr) DOM.tbody.appendChild(tr);
+            });
+            if (DOM.noResultRow) DOM.tbody.appendChild(DOM.noResultRow);
         }
 
         function sortTable(mode, textName) {
-            document.querySelectorAll('#sort-dropdown .dropdown-item').forEach(item => item.classList.remove('sort-active'));
-            document.getElementById(`sort-${mode}`)?.classList.add('sort-active');
+            document.querySelectorAll('[data-sort]').forEach(item => item.classList.remove('sort-active'));
+            document.querySelector(`[data-sort="${mode}"]`)?.classList.add('sort-active');
             
-            if (textName) document.getElementById('btn-sort-text').innerText = `マップ名ソート: ${textName}`;
+            if (textName) DOM.btnSortText.innerText = `マップ名ソート: ${textName}`;
+
+            AppState.currentSort = mode; 
 
             const sorters = {
                 'default': (a, b) => a.defaultOrder - b.defaultOrder,
@@ -708,24 +856,16 @@
                 'eng-desc': (a, b) => String(b["マップ英語"] || '').localeCompare(String(a["マップ英語"] || ''), 'en', { numeric: true }) || a.defaultOrder - b.defaultOrder
             };
             
-            currentData.sort(sorters[mode]);
+            AppState.currentData.sort(sorters[mode]);
             
-            const tbody = document.getElementById('boss-table-body');
-            currentData.forEach(item => {
-                const tr = rowMap.get(item.defaultOrder);
-                if (tr) tbody.appendChild(tr);
-            });
-            
-            const noResultRow = document.getElementById('no-result-row');
-            if (noResultRow) tbody.appendChild(noResultRow);
-
+            reorderRows();
             filterTable();
         }
 
         function toggleColumn(stateKey) {
-            if (columnState[stateKey] !== undefined) {
-                columnState[stateKey] = !columnState[stateKey];
-                const isHidden = !columnState[stateKey];
+            if (AppState.columnState[stateKey] !== undefined) {
+                AppState.columnState[stateKey] = !AppState.columnState[stateKey];
+                const isHidden = !AppState.columnState[stateKey];
                 
                 document.querySelectorAll(`.col-${stateKey}`).forEach(el => {
                     el.classList.toggle('is-hidden', isHidden);
@@ -737,8 +877,8 @@
         }
         
         function setAllColumns(visible) {
-            Object.keys(columnState).forEach(k => {
-                columnState[k] = visible;
+            Object.keys(AppState.columnState).forEach(k => {
+                AppState.columnState[k] = visible;
                 const isHidden = !visible;
                 document.querySelectorAll(`.col-${k}`).forEach(el => {
                     el.classList.toggle('is-hidden', isHidden);
@@ -749,23 +889,18 @@
         }
         
         function resetView() {
-            document.querySelectorAll('#sort-dropdown .dropdown-item').forEach(item => item.classList.remove('sort-active'));
-            document.getElementById('sort-default')?.classList.add('sort-active');
-            document.getElementById('btn-sort-text').innerText = 'マップ名ソート: 初期順';
+            document.querySelectorAll('[data-sort]').forEach(item => item.classList.remove('sort-active'));
+            document.querySelector('[data-sort="default"]')?.classList.add('sort-active');
+            DOM.btnSortText.innerText = 'マップ名ソート: 初期順';
             
-            currentData.sort((a, b) => a.defaultOrder - b.defaultOrder);
-            const tbody = document.getElementById('boss-table-body');
-            currentData.forEach(item => {
-                const tr = rowMap.get(item.defaultOrder);
-                if (tr) tbody.appendChild(tr);
-            });
+            AppState.currentSort = 'default'; 
+            
+            AppState.currentData.sort((a, b) => a.defaultOrder - b.defaultOrder);
+            reorderRows();
 
-            const noResultRow = document.getElementById('no-result-row');
-            if (noResultRow) tbody.appendChild(noResultRow);
-
-            Object.keys(columnState).forEach(k => {
-                columnState[k] = !['検索用よみがな', '検索用ローマ字'].includes(k);
-                const isHidden = !columnState[k];
+            Object.keys(AppState.columnState).forEach(k => {
+                AppState.columnState[k] = !['検索用よみがな', '検索用ローマ字'].includes(k);
+                const isHidden = !AppState.columnState[k];
                 document.querySelectorAll(`.col-${k}`).forEach(el => {
                     el.classList.toggle('is-hidden', isHidden);
                 });
